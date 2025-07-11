@@ -14,9 +14,9 @@
   "dependencies": {
     "@flagship.io/js-sdk": "^5.1.5",
     "@flagship.io/react-sdk": "^5.1.1",
-    "@remix-run/node": "^2.16.8",
-    "@remix-run/react": "^2.16.8",
-    "@remix-run/serve": "^2.16.8",
+    "@remix-run/node": "2.16.7",
+    "@remix-run/express": "2.16.7",
+    "@remix-run/serve": "2.16.7",
     "@supabase/supabase-js": "^2.50.4",
     "isbot": "^4.1.0",
     "react": "^18.2.0",
@@ -27,7 +27,8 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@remix-run/dev": "^2.16.8",
+    "@remix-run/dev": "2.16.7",
+    "@vercel/remix": "2.16.7",
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
     "@types/react-slick": "^0.23.13",
