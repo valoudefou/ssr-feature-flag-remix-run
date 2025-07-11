@@ -1,10 +1,8 @@
-// remix.config.js
+import { vercelPreset } from "vercel-remix";
+
+/** @type {import('@remix-run/dev').AppConfig} */
 export default {
-  future: {
-    v3_fetcherPersist: true,
-    v3_lazyRouteDiscovery: true,
-    v3_relativeSplatPath: true,
-    v3_singleFetch: true,
-    v3_throwAbortReason: true,
-  },
+  // your config...
+  serverBuildTarget: "vercel",
+  server: vercelPreset(),
 };
