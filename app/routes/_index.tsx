@@ -1,138 +1,300 @@
-import type { MetaFunction } from "@remix-run/node";
+// app/routes/index.tsx
 
-export const meta: MetaFunction = () => {
-  return [
-    { title: "New Remix App" },
-    { name: "description", content: "Welcome to Remix!" },
-  ];
-};
+import { json, LoaderFunction } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
+import { getFsVisitorData } from "../utils/flagship.server";
+import React, { useEffect, useRef, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 
-export default function Index() {
-  return (
-    <div className="flex h-screen items-center justify-center">
-      <div className="flex flex-col items-center gap-16">
-        <header className="flex flex-col items-center gap-9">
-          <h1 className="leading text-2xl font-bold text-gray-800 dark:text-gray-100">
-            Welcome to <span className="sr-only">Remix</span>
-          </h1>
-          <div className="h-[144px] w-[434px]">
-            <img
-              src="/logo-light.png"
-              alt="Remix"
-              className="block w-full dark:hidden"
-            />
-            <img
-              src="/logo-dark.png"
-              alt="Remix"
-              className="hidden w-full dark:block"
-            />
-          </div>
-        </header>
-        <nav className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-gray-200 p-6 dark:border-gray-700">
-          <p className="leading-6 text-gray-700 dark:text-gray-200">
-            What&apos;s next?
-          </p>
-          <ul>
-            {resources.map(({ href, text, icon }) => (
-              <li key={href}>
-                <a
-                  className="group flex items-center gap-3 self-stretch p-3 leading-normal text-blue-700 hover:underline dark:text-blue-500"
-                  href={href}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {icon}
-                  {text}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </div>
-    </div>
-  );
+// Type definitions for product and loader data
+interface Product {
+  id: string;
+  name: string;
+  img_link: string;
+  price: string | number | null;
 }
 
-const resources = [
-  {
-    href: "https://remix.run/start/quickstart",
-    text: "Quick Start (5 min)",
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="20"
-        viewBox="0 0 20 20"
-        fill="none"
-        className="stroke-gray-600 group-hover:stroke-current dark:stroke-gray-300"
-      >
-        <path
-          d="M8.51851 12.0741L7.92592 18L15.6296 9.7037L11.4815 7.33333L12.0741 2L4.37036 10.2963L8.51851 12.0741Z"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-  },
-  {
-    href: "https://remix.run/start/tutorial",
-    text: "Tutorial (30 min)",
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="20"
-        viewBox="0 0 20 20"
-        fill="none"
-        className="stroke-gray-600 group-hover:stroke-current dark:stroke-gray-300"
-      >
-        <path
-          d="M4.561 12.749L3.15503 14.1549M3.00811 8.99944H1.01978M3.15503 3.84489L4.561 5.2508M8.3107 1.70923L8.3107 3.69749M13.4655 3.84489L12.0595 5.2508M18.1868 17.0974L16.635 18.6491C16.4636 18.8205 16.1858 18.8205 16.0144 18.6491L13.568 16.2028C13.383 16.0178 13.0784 16.0347 12.915 16.239L11.2697 18.2956C11.047 18.5739 10.6029 18.4847 10.505 18.142L7.85215 8.85711C7.75756 8.52603 8.06365 8.21994 8.39472 8.31453L17.6796 10.9673C18.0223 11.0653 18.1115 11.5094 17.8332 11.7321L15.7766 13.3773C15.5723 13.5408 15.5554 13.8454 15.7404 14.0304L18.1868 16.4767C18.3582 16.6481 18.3582 16.926 18.1868 17.0974Z"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-  },
-  {
-    href: "https://remix.run/docs",
-    text: "Remix Docs",
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="20"
-        viewBox="0 0 20 20"
-        fill="none"
-        className="stroke-gray-600 group-hover:stroke-current dark:stroke-gray-300"
-      >
-        <path
-          d="M9.99981 10.0751V9.99992M17.4688 17.4688C15.889 19.0485 11.2645 16.9853 7.13958 12.8604C3.01467 8.73546 0.951405 4.11091 2.53116 2.53116C4.11091 0.951405 8.73546 3.01467 12.8604 7.13958C16.9853 11.2645 19.0485 15.889 17.4688 17.4688ZM2.53132 17.4688C0.951566 15.8891 3.01483 11.2645 7.13974 7.13963C11.2647 3.01471 15.8892 0.951453 17.469 2.53121C19.0487 4.11096 16.9854 8.73551 12.8605 12.8604C8.73562 16.9853 4.11107 19.0486 2.53132 17.4688Z"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
-      </svg>
-    ),
-  },
-  {
-    href: "https://rmx.as/discord",
-    text: "Join Discord",
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="20"
-        viewBox="0 0 24 20"
-        fill="none"
-        className="stroke-gray-600 group-hover:stroke-current dark:stroke-gray-300"
-      >
-        <path
-          d="M15.0686 1.25995L14.5477 1.17423L14.2913 1.63578C14.1754 1.84439 14.0545 2.08275 13.9422 2.31963C12.6461 2.16488 11.3406 2.16505 10.0445 2.32014C9.92822 2.08178 9.80478 1.84975 9.67412 1.62413L9.41449 1.17584L8.90333 1.25995C7.33547 1.51794 5.80717 1.99419 4.37748 2.66939L4.19 2.75793L4.07461 2.93019C1.23864 7.16437 0.46302 11.3053 0.838165 15.3924L0.868838 15.7266L1.13844 15.9264C2.81818 17.1714 4.68053 18.1233 6.68582 18.719L7.18892 18.8684L7.50166 18.4469C7.96179 17.8268 8.36504 17.1824 8.709 16.4944L8.71099 16.4904C10.8645 17.0471 13.128 17.0485 15.2821 16.4947C15.6261 17.1826 16.0293 17.8269 16.4892 18.4469L16.805 18.8725L17.3116 18.717C19.3056 18.105 21.1876 17.1751 22.8559 15.9238L23.1224 15.724L23.1528 15.3923C23.5873 10.6524 22.3579 6.53306 19.8947 2.90714L19.7759 2.73227L19.5833 2.64518C18.1437 1.99439 16.6386 1.51826 15.0686 1.25995ZM16.6074 10.7755L16.6074 10.7756C16.5934 11.6409 16.0212 12.1444 15.4783 12.1444C14.9297 12.1444 14.3493 11.6173 14.3493 10.7877C14.3493 9.94885 14.9378 9.41192 15.4783 9.41192C16.0471 9.41192 16.6209 9.93851 16.6074 10.7755ZM8.49373 12.1444C7.94513 12.1444 7.36471 11.6173 7.36471 10.7877C7.36471 9.94885 7.95323 9.41192 8.49373 9.41192C9.06038 9.41192 9.63892 9.93712 9.6417 10.7815C9.62517 11.6239 9.05462 12.1444 8.49373 12.1444Z"
-          strokeWidth="1.5"
-        />
-      </svg>
-    ),
-  },
-];
+interface LoaderData {
+  products: Product[];
+  flagValue?: string;
+  blockName: string;
+  visitorId: string;
+  flagKey: string;
+  userContext: Record<string, any>;
+}
+
+// Loader function to fetch data for the page
+export const loader: LoaderFunction = async ({ request }) => {
+  try {
+    // Parse URL and get optional flagValue from query params
+    const url = new URL(request.url);
+    const customFlagValue = url.searchParams.get("flagValue") || undefined;
+    const visitorId = uuidv4(); // Generate a unique visitor ID
+
+    // Ensure required environment variables are set
+    if (!process.env.SITE_ID || !process.env.RECS_BEARER) {
+      throw new Error("Missing SITE_ID or RECS_BEARER environment variables");
+    }
+
+    // Get visitor data from Flagship
+    const visitor = await getFsVisitorData({
+      id: visitorId,
+      hasConsented: true,
+      context: {
+        Session: "Returning",
+        INTERNET_CONNECTION: "5g",
+        fs_orders: 3,
+        fs_authenticated: true,
+      },
+    });
+
+    // Get the flag for product recommendations
+    const flag = visitor.getFlag("flagProductRecs");
+    // Get the value of the flag (strategy ID)
+    const fallbackFlagValue = flag?.getValue("07275641-4a2e-49b2-aa5d-bb4b7b8b2a4c");
+    // Use custom flag value if provided, otherwise fallback
+    const flagValue = customFlagValue || fallbackFlagValue;
+    // Get the flag key (for debug)
+    const flagKey = (flag as any)?._key || "unknown";
+
+    // Prepare API query for recommendations
+    const query = JSON.stringify({ viewing_item: "456" });
+    const fields = JSON.stringify(["id", "name", "img_link", "price"]);
+
+    let products: Product[] = [];
+    let blockName = "";
+
+    // If a flag value is available, fetch recommendations
+    if (flagValue) {
+      try {
+        const recoUrl = `https://uc-info.eu.abtasty.com/v1/reco/${process.env.SITE_ID}/recos/${flagValue}?variables=${encodeURIComponent(
+          query
+        )}&fields=${encodeURIComponent(fields)}`;
+
+        const res = await fetch(recoUrl, {
+          headers: {
+            Authorization: `Bearer ${process.env.RECS_BEARER}`,
+          },
+        });
+
+        if (!res.ok) {
+          // Log error if fetch fails
+          const errorText = await res.text();
+          console.error("❌ Failed to fetch recommendations:", res.status, res.statusText, errorText);
+          blockName = "Our Top Picks For You";
+        } else {
+          // Parse response and extract products and block name
+          const data = await res.json();
+          products = data.items || [];
+          blockName = data.name || "Our Top Picks For You";
+        }
+      } catch (err) {
+        // Log any fetch error
+        console.error("❌ Recommendation API fetch error:", err);
+        blockName = "Our Top Picks For You";
+      }
+    } else {
+      // Fallback block name if no flag value
+      blockName = "Our Top Picks For You";
+    }
+
+    // Optional: Fetch all recommendation blocks for logging/debugging
+    try {
+      const baseRecoUrl = `https://uc-info.eu.abtasty.com/v1/reco/`;
+      const allRecosRes = await fetch(baseRecoUrl, {
+        headers: {
+          Authorization: `Bearer ${process.env.RECS_BEARER}`,
+        },
+      });
+
+      if (!allRecosRes.ok) {
+        const errText = await allRecosRes.text();
+        console.error("⚠ Could not fetch all recos:", allRecosRes.status, allRecosRes.statusText, errText);
+      } else {
+        const allRecos = await allRecosRes.text();
+        console.log("📊 All Reco Blocks:", allRecos);
+      }
+    } catch (e) {
+      console.error("⚠ Error fetching all recommendation blocks:", e);
+    }
+
+    // Return data to the component
+    return json<LoaderData>({ products, flagValue, blockName, visitorId, flagKey, userContext: visitor.context });
+  } catch (error) {
+    // Handle loader errors and return fallback data
+    console.error("Loader error:", error);
+    return json<LoaderData>({
+      products: [],
+      flagValue: undefined,
+      blockName: "Our Top Picks For You",
+      visitorId: "",
+      flagKey: "",
+      userContext: {},
+    });
+  }
+};
+
+// Main React component for the page
+export default function Index() {
+  // Get loader data
+  const { products, flagValue, blockName, visitorId, flagKey, userContext } = useLoaderData<LoaderData>();
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  // State for carousel scroll buttons
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  // Update scroll button state based on carousel position
+  const updateScrollButtons = () => {
+    if (!carouselRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
+    setCanScrollLeft(scrollLeft > 0);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 1);
+  };
+
+  // Update scroll buttons on mount and when products change
+  useEffect(() => {
+    updateScrollButtons();
+    window.addEventListener("resize", updateScrollButtons);
+    return () => {
+      window.removeEventListener("resize", updateScrollButtons);
+    };
+  }, [products]);
+
+  // Utility to clean up price formatting
+  const cleanPrice = (price: string | number | null) => {
+    if (price == null) return "";
+    return String(price).replace(/â‚¬/g, "€");
+  };
+
+  return (
+    <main className="min-h-screen flex flex-col bg-gray-50">
+      {/* Recommendations Block */}
+      <section aria-label="Product recommendations" className="p-8 py-10 flex flex-col">
+        <h1 className="py-4 px-4 text-3xl font-bold mb-4 text-gray-900">{blockName}</h1>
+
+        <div className="relative">
+          {/* Gradient overlays for fade effect */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute left-0 top-0 h-full w-12 z-20 bg-gradient-to-r from-gray-50 to-transparent"
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute right-0 top-0 h-full w-12 z-20 bg-gradient-to-l from-gray-50 to-transparent"
+          />
+
+          {/* Scroll buttons */}
+          <button
+            type="button"
+            onClick={() => carouselRef.current?.scrollBy({ left: -300, behavior: "smooth" })}
+            disabled={!canScrollLeft}
+            aria-label="Scroll left"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-30 flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-300 shadow-md transition hover:bg-gray-100 hover:scale-110 hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <svg className="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => carouselRef.current?.scrollBy({ left: 300, behavior: "smooth" })}
+            disabled={!canScrollRight}
+            aria-label="Scroll right"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-30 flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-300 shadow-md transition hover:bg-gray-100 hover:scale-110 hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <svg className="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+
+          {/* Carousel */}
+          <div
+            ref={carouselRef}
+            onScroll={updateScrollButtons}
+            className="overflow-x-auto scroll-smooth pr-4"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none", whiteSpace: "nowrap" }}
+            tabIndex={0}
+            aria-label="Product carousel"
+          >
+            {/* Show message if no products */}
+            {products.length === 0 && <p className="p-4 text-gray-500">No recommendations available at the moment.</p>}
+            {/* Render each product as a card */}
+            {products.map((product: Product) => (
+              <article
+                key={product.id}
+                className="inline-block min-w-[220px] max-w-[240px] bg-white rounded-2xl shadow hover:shadow-lg transition-shadow duration-300 mx-3 align-top"
+              >
+                <img
+                  src={product.img_link}
+                  alt={product.name}
+                  className="w-full h-40 object-contain p-4"
+                  loading="lazy"
+                  width={240}
+                  height={160}
+                  decoding="async"
+                  fetchPriority="low"
+                />
+                <div className="px-4 pb-4">
+                  <h2 className="text-base font-semibold truncate">{product.name}</h2>
+                  <p className="text-gray-800 font-semibold text-lg mt-1">{cleanPrice(product.price)}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+
+        {/* Debug info block */}
+        <div className="flex-grow px-2 py-10 pb-8">
+          <div className="w-full py-6 h-full bg-white border border-gray-200 rounded-xl shadow-sm p-6 font-mono text-sm text-gray-800">
+            <div className="mb-4 text-gray-500 font-semibold uppercase text-xs tracking-wide">Debug Info</div>
+            <div className="space-y-2">
+              <div><strong>Flag:</strong> {flagKey}</div>
+              <div><strong>Value:</strong> {flagValue}</div>
+              <div><strong>Recommendation strategy:</strong> {blockName}</div>
+              <div>
+                <strong>User Context:</strong>
+                <pre className="whitespace-pre-wrap bg-gray-100 mt-2 p-2 rounded-md mt-1">
+                  {JSON.stringify(userContext, null, 2)}
+                </pre>
+              </div>
+            </div>
+          </div>
+
+          {/* Floating bottom-right form for changing flag value */}
+          <div
+            className="fixed bottom-4 right-4 w-80 bg-white border border-gray-300 rounded-lg shadow-lg p-4 z-50"
+            style={{ minWidth: "320px" }}
+          >
+            <form method="get" className="space-y-2">
+              <label className="block font-medium text-gray-700">
+                Flag Reco Strategy:
+                <select
+                  name="flagValue"
+                  defaultValue={flagValue}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {/* List of available flag values */}
+                  <option value="9174ac6d-6b74-4234-b412-7d2d0d4acdad">9174ac6d-6b74-4234-b412-7d2d0d4acdad</option>
+                  <option value="b7c76816-dcf3-4c0c-9023-a80a3a348151">b7c76816-dcf3-4c0c-9023-a80a3a348151</option>
+                  <option value="b24cc1cb-bf79-4784-b23b-0a66b3593509">b24cc1cb-bf79-4784-b23b-0a66b3593509</option>
+                  <option value="e5570bbc-9f91-48ec-b0ec-5d6ab941e402">e5570bbc-9f91-48ec-b0ec-5d6ab941e402</option>
+                  <option value="875bb146-4a9c-4e26-ab67-02b2ccb87ca1">875bb146-4a9c-4e26-ab67-02b2ccb87ca1</option>
+                  <option value="07275641-4a2e-49b2-aa5d-bb4b7b8b2a4c">07275641-4a2e-49b2-aa5d-bb4b7b8b2a4c</option>
+                  <option value="2e2c9992-2c5d-466a-bded-71cb2a059730">2e2c9992-2c5d-466a-bded-71cb2a059730</option>
+                </select>
+              </label>
+              <button
+                type="submit"
+                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow hover:bg-blue-700 transition"
+              >
+                Submit
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
