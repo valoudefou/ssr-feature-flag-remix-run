@@ -1,16 +1,4 @@
 {
-  "name": "remix",
-  "private": true,
-  "sideEffects": false,
-  "type": "module",
-  "scripts": {
-    "build": "remix vite:build",
-    "dev": "remix vite:dev",
-    "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
-    "start": "remix-serve build/index.js",
-    "typecheck": "tsc",
-    "postinstall": "remix setup node"
-  },
   "dependencies": {
     "@flagship.io/js-sdk": "^5.1.5",
     "@flagship.io/react-sdk": "^5.1.1",
@@ -28,7 +16,6 @@
   },
   "devDependencies": {
     "@remix-run/dev": "^2.16.8",
-    "@remix-run/vercel": "^2.16.8",
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
     "@types/react-slick": "^0.23.13",
@@ -47,8 +34,5 @@
     "typescript": "^5.1.6",
     "vite": "^6.0.0",
     "vite-tsconfig-paths": "^4.2.1"
-  },
-  "engines": {
-    "node": ">=20.0.0"
   }
 }
