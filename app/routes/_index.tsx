@@ -226,15 +226,17 @@ export default function Index() {
                 key={product.id}
                 className="inline-block min-w-[220px] max-w-[240px] bg-white rounded-2xl shadow hover:shadow-lg transition-shadow duration-300 mx-3 align-top"
               >
-                <img
-                  src={product.img_link}
-                  alt={product.name}
-                  className="w-full h-40 object-contain p-4"
-                  loading="lazy"
-                  width={240}
-                  height={160}
-                  decoding="async"
-                  fetchPriority="low"
+                  <img
+                  {...({
+                    src: product.img_link,
+                    alt: product.name,
+                    className: "w-full h-40 object-contain p-4",
+                    loading: "lazy",
+                    width: 240,
+                    height: 160,
+                    decoding: "async",
+                    fetchpriority: "low",
+                  } as any)}
                 />
                 <div className="px-4 pb-4">
                   <h2 className="text-base font-semibold truncate">{product.name}</h2>
