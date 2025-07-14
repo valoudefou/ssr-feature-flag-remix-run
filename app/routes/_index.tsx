@@ -21,22 +21,29 @@ interface LoaderData {
   visitorId: string;
   flagKey: string;
   userContext: Record<string, any>;
+  logs: string[]; // add this
 }
+
 
 // Loader function to fetch data for the page
 export const loader: LoaderFunction = async ({ request }) => {
+  const logs: string[] = [];
+
   try {
-    // Parse URL and get optional flagValue from query params
+    logs.push("[Loader] Parsing URL and getting custom flagValue");
     const url = new URL(request.url);
     const customFlagValue = url.searchParams.get("flagValue") || undefined;
-    const visitorId = uuidv4(); // Generate a unique visitor ID
 
-    // Ensure required environment variables are set
+    const visitorId = uuidv4();
+    logs.push(`[Loader] Generated visitorId: ${visitorId}`);
+
     if (!process.env.SITE_ID || !process.env.RECS_BEARER) {
+      logs.push("[Loader] Missing SITE_ID or RECS_BEARER environment variables");
       throw new Error("Missing SITE_ID or RECS_BEARER environment variables");
     }
+    logs.push("[Loader] Environment variables verified");
 
-    // Get visitor data from Flagship
+    logs.push("[Loader] Fetching Flagship visitor data");
     const visitor = await getFsVisitorData({
       id: visitorId,
       hasConsented: true,
@@ -47,26 +54,25 @@ export const loader: LoaderFunction = async ({ request }) => {
         fs_authenticated: true,
       },
     });
+    logs.push("[Loader] Visitor data fetched");
 
-    // Get the flag for product recommendations
     const flag = visitor.getFlag("flagProductRecs");
-    // Get the value of the flag (strategy ID)
     const fallbackFlagValue = flag?.getValue("07275641-4a2e-49b2-aa5d-bb4b7b8b2a4c");
-    // Use custom flag value if provided, otherwise fallback
     const flagValue = customFlagValue || fallbackFlagValue;
-    // Get the flag key (for debug)
     const flagKey = (flag as any)?._key || "unknown";
 
-    // Prepare API query for recommendations
+    logs.push(`[Loader] Flag key: ${flagKey}`);
+    logs.push(`[Loader] Using flagValue: ${flagValue}`);
+
     const query = JSON.stringify({ viewing_item: "456" });
     const fields = JSON.stringify(["id", "name", "img_link", "price"]);
 
     let products: Product[] = [];
     let blockName = "";
 
-    // If a flag value is available, fetch recommendations
     if (flagValue) {
       try {
+        logs.push(`[Loader] Fetching recommendations for flagValue ${flagValue}`);
         const recoUrl = `https://uc-info.eu.abtasty.com/v1/reco/${process.env.SITE_ID}/recos/${flagValue}?variables=${encodeURIComponent(
           query
         )}&fields=${encodeURIComponent(fields)}`;
@@ -78,28 +84,27 @@ export const loader: LoaderFunction = async ({ request }) => {
         });
 
         if (!res.ok) {
-          // Log error if fetch fails
           const errorText = await res.text();
-          console.error("❌ Failed to fetch recommendations:", res.status, res.statusText, errorText);
+          logs.push(`[Loader] Failed to fetch recommendations: ${res.status} ${res.statusText} - ${errorText}`);
           blockName = "Our Top Picks For You";
         } else {
-          // Parse response and extract products and block name
           const data = await res.json();
           products = data.items || [];
           blockName = data.name || "Our Top Picks For You";
+          logs.push(`[Loader] Recommendations fetched: ${products.length} products, block name: ${blockName}`);
         }
       } catch (err) {
-        // Log any fetch error
-        console.error("❌ Recommendation API fetch error:", err);
+        logs.push(`[Loader] Recommendation API fetch error: ${String(err)}`);
         blockName = "Our Top Picks For You";
       }
     } else {
-      // Fallback block name if no flag value
+      logs.push("[Loader] No flagValue provided, using default block name");
       blockName = "Our Top Picks For You";
     }
 
-    // Optional: Fetch all recommendation blocks for logging/debugging
+    // Optionally fetch all reco blocks for debug logging
     try {
+      logs.push("[Loader] Fetching all recommendation blocks");
       const baseRecoUrl = `https://uc-info.eu.abtasty.com/v1/reco/`;
       const allRecosRes = await fetch(baseRecoUrl, {
         headers: {
@@ -109,20 +114,26 @@ export const loader: LoaderFunction = async ({ request }) => {
 
       if (!allRecosRes.ok) {
         const errText = await allRecosRes.text();
-        console.error("⚠ Could not fetch all recos:", allRecosRes.status, allRecosRes.statusText, errText);
+        logs.push(`[Loader] Could not fetch all recos: ${allRecosRes.status} ${allRecosRes.statusText} - ${errText}`);
       } else {
         const allRecos = await allRecosRes.text();
-        console.log("📊 All Reco Blocks:", allRecos);
+        logs.push(`[Loader] All Reco Blocks: ${allRecos.substring(0, 200)}...`); // limit length
       }
     } catch (e) {
-      console.error("⚠ Error fetching all recommendation blocks:", e);
+      logs.push(`[Loader] Error fetching all recommendation blocks: ${String(e)}`);
     }
 
-    // Return data to the component
-    return json<LoaderData>({ products, flagValue, blockName, visitorId, flagKey, userContext: visitor.context });
+    return json<LoaderData>({
+      products,
+      flagValue,
+      blockName,
+      visitorId,
+      flagKey,
+      userContext: visitor.context,
+      logs,
+    });
   } catch (error) {
-    // Handle loader errors and return fallback data
-    console.error("Loader error:", error);
+    logs.push(`[Loader] Loader error: ${String(error)}`);
     return json<LoaderData>({
       products: [],
       flagValue: undefined,
@@ -130,14 +141,16 @@ export const loader: LoaderFunction = async ({ request }) => {
       visitorId: "",
       flagKey: "",
       userContext: {},
+      logs,
     });
   }
 };
 
+
 // Main React component for the page
 export default function Index() {
   // Get loader data
-  const { products, flagValue, blockName, visitorId, flagKey, userContext } = useLoaderData<LoaderData>();
+  const { products, flagValue, blockName, visitorId, logs, flagKey, userContext } = useLoaderData<LoaderData>();
   const carouselRef = useRef<HTMLDivElement>(null);
 
   // State for carousel scroll buttons
@@ -246,21 +259,23 @@ export default function Index() {
         </div>
 
         {/* Debug info block */}
-        <div className="flex-grow px-2 py-10 pb-8">
-          <div className="w-full py-6 h-full bg-white border border-gray-200 rounded-xl shadow-sm p-6 font-mono text-sm text-gray-800">
-            <div className="mb-4 text-gray-500 font-semibold uppercase text-xs tracking-wide">Debug Info</div>
-            <div className="space-y-2">
-              <div><strong>Flag:</strong> {flagKey}</div>
-              <div><strong>Value:</strong> {flagValue}</div>
-              <div><strong>Recommendation strategy:</strong> {blockName}</div>
-              <div>
-                <strong>User Context:</strong>
-                <pre className="whitespace-pre-wrap bg-gray-100 mt-2 p-2 rounded-md mt-1">
-                  {JSON.stringify(userContext, null, 2)}
-                </pre>
-              </div>
-            </div>
-          </div>
+<div className="flex-grow px-4 py-6 mt-10 pb-8 bg-[#0f2600] rounded-xl shadow-inner font-mono text-sm text-green-400">
+  <div className="px-1 mb-3 uppercase text-xs tracking-widest font-bold text-green-400 drop-shadow-[0_1px_1px_rgba(0,255,0,0.7)]">
+    DEBUG INFO
+  </div>
+  <div className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-green-700 scrollbar-track-green-900">
+    {logs.map((log, i) => (
+      <div
+        key={i}
+        className="select-text whitespace-pre-wrap bg-[#112d00] py-1"
+      >
+        {log}
+      </div>
+    ))}
+  </div>
+</div>
+
+
 
           {/* Floating bottom-right form for changing flag value */}
           <div
@@ -293,7 +308,7 @@ export default function Index() {
               </button>
             </form>
           </div>
-        </div>
+      
       </section>
     </main>
   );
