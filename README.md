@@ -178,6 +178,29 @@ export default function Index() {
 
 ---
 
+## 📦 Installation
+
+1. **Clone the repository**
+
+```bash
+git clone https://github.com/valoudefou/ssr-feature-flag-remix-run.git
+cd ssr-feature-flag-remix-run
+```
+
+2. **Install dependencies**
+
+```bash
+npm install
+```
+
+## 💻 Start the Development Server
+
+```bash
+npm run dev
+```
+
+---
+
 ## Further Reading
 
 - [Flagship.io React SDK Documentation](https://flagship.io/docs/sdk/react)
@@ -195,4 +218,4 @@ This approach integrates feature flags directly in Remix server loaders using th
 
 ## License
 
-MIT © Your Name
+MIT © AB Tasty

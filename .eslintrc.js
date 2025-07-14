@@ -50,11 +50,14 @@ module.exports = {
       },
     },
 
-    // Typescript
+    // TypeScript
     {
       files: ["**/*.{ts,tsx}"],
       plugins: ["@typescript-eslint", "import"],
       parser: "@typescript-eslint/parser",
+      parserOptions: {
+        project: "./tsconfig.json",
+      },
       settings: {
         "import/internal-regex": "^~/",
         "import/resolver": {
@@ -63,6 +66,7 @@ module.exports = {
           },
           typescript: {
             alwaysTryTypes: true,
+            project: "./tsconfig.json",
           },
         },
       },
@@ -71,11 +75,33 @@ module.exports = {
         "plugin:import/recommended",
         "plugin:import/typescript",
       ],
+      rules: {
+        "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+        "@typescript-eslint/consistent-type-imports": "error",
+      },
     },
 
-    // Node
+    // Server-side files
     {
-      files: [".eslintrc.cjs"],
+      files: ["**/*.server.{js,jsx,ts,tsx}"],
+      env: {
+        node: true,
+        browser: false,
+      },
+    },
+
+    // Client-side files
+    {
+      files: ["**/*.client.{js,jsx,ts,tsx}"],
+      env: {
+        browser: true,
+        node: false,
+      },
+    },
+
+    // Node config files
+    {
+      files: [".eslintrc.cjs", "remix.config.js"],
       env: {
         node: true,
       },

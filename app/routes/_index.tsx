@@ -43,17 +43,15 @@ export const loader: LoaderFunction = async ({ request }) => {
     }
     logs.push("[Loader] Environment variables verified");
 
-    logs.push("[Loader] Fetching Flagship visitor data");
     const visitor = await getFsVisitorData({
       id: visitorId,
       hasConsented: true,
       context: {
         Session: "Returning",
-        INTERNET_CONNECTION: "5g",
-        fs_orders: 3,
-        fs_authenticated: true,
       },
     });
+    logs.push(`[Loader] Reading user context: ${visitor.context ? JSON.stringify(visitor.context) : "No context available"}`);
+    logs.push("[Loader] Fetching Flagship visitor data");
     logs.push("[Loader] Visitor data fetched");
 
     const flag = visitor.getFlag("flagProductRecs");
@@ -61,8 +59,11 @@ export const loader: LoaderFunction = async ({ request }) => {
     const flagValue = customFlagValue || fallbackFlagValue;
     const flagKey = (flag as any)?._key || "unknown";
 
-    logs.push(`[Loader] Flag key: ${flagKey}`);
+    logs.push(`[Loader] Flag key fetched: ${flagKey}`);
     logs.push(`[Loader] Using flagValue: ${flagValue}`);
+    logs.push(`[Loader] Campaign type: ${JSON.stringify(flag.metadata.campaignType)}`);
+    logs.push(`[Loader] Campaign mame: ${JSON.stringify(flag.metadata.campaignName)}`);
+    logs.push(`[Loader] CampaignId: ${JSON.stringify(flag.metadata.campaignId)}`);
 
     const query = JSON.stringify({ viewing_item: "456" });
     const fields = JSON.stringify(["id", "name", "img_link", "price"]);
@@ -91,7 +92,8 @@ export const loader: LoaderFunction = async ({ request }) => {
           const data = await res.json();
           products = data.items || [];
           blockName = data.name || "Our Top Picks For You";
-          logs.push(`[Loader] Recommendations fetched: ${products.length} products, block name: ${blockName}`);
+          logs.push(`[Loader] Recommendations fetched: ${products.length}`);
+          logs.push(`[Loader] Block name: ${blockName}`);
         }
       } catch (err) {
         logs.push(`[Loader] Recommendation API fetch error: ${String(err)}`);
@@ -104,7 +106,6 @@ export const loader: LoaderFunction = async ({ request }) => {
 
     // Optionally fetch all reco blocks for debug logging
     try {
-      logs.push("[Loader] Fetching all recommendation blocks");
       const baseRecoUrl = `https://uc-info.eu.abtasty.com/v1/reco/`;
       const allRecosRes = await fetch(baseRecoUrl, {
         headers: {
@@ -117,10 +118,9 @@ export const loader: LoaderFunction = async ({ request }) => {
         logs.push(`[Loader] Could not fetch all recos: ${allRecosRes.status} ${allRecosRes.statusText} - ${errText}`);
       } else {
         const allRecos = await allRecosRes.text();
-        logs.push(`[Loader] All Reco Blocks: ${allRecos.substring(0, 200)}...`); // limit length
       }
     } catch (e) {
-      logs.push(`[Loader] Error fetching all recommendation blocks: ${String(e)}`);
+
     }
 
     return json<LoaderData>({
@@ -236,9 +236,12 @@ export default function Index() {
             {/* Render each product as a card */}
             {products.map((product: Product) => (
               <article
+                onClick={() => {
+                  logs.push(`[Loader] Data sent to analytics for product ID: ${product.id}, Name: ${product.name}`);
+                }}
                 key={product.id}
                 className="inline-block min-w-[220px] max-w-[240px] bg-white rounded-2xl shadow hover:shadow-lg transition-shadow duration-300 mx-3 align-top"
-              >
+                >
                 <img
                   src={product.img_link}
                   alt={product.name}
@@ -259,15 +262,15 @@ export default function Index() {
         </div>
 
         {/* Debug info block */}
-<div className="flex-grow px-4 py-6 mt-10 pb-8 bg-[#0f2600] rounded-xl shadow-inner font-mono text-sm text-green-400">
-  <div className="px-1 mb-3 uppercase text-xs tracking-widest font-bold text-green-400 drop-shadow-[0_1px_1px_rgba(0,255,0,0.7)]">
+<div className="flex-grow px-4 py-6 mt-10 pb-8 bg-[#0f2600] rounded-l shadow-inner font-mono text-sm text-green-400">
+  <div className="px-1 mb-3 uppercase text-sm tracking-widest font-bold text-green-400 drop-shadow-[0_1px_1px_rgba(0,255,0,0.7)]">
     DEBUG INFO
   </div>
   <div className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-green-700 scrollbar-track-green-900">
     {logs.map((log, i) => (
       <div
         key={i}
-        className="select-text whitespace-pre-wrap bg-[#112d00] py-1"
+        className="select-text whitespace-pre-wrap bg-[#112d00] px-1"
       >
         {log}
       </div>
