@@ -29,12 +29,16 @@ export const meta: MetaFunction = () => [
 
 export default function App() {
   return (
-    <>
-      <Meta />
-      <Links />
-      <Outlet />
-      <ScrollRestoration />
-      <Scripts />
-    </>
+    <html lang="en">
+      <head>
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        <Outlet />
+        <ScrollRestoration />
+        <Scripts />
+      </body>
+    </html>
   );
 }
