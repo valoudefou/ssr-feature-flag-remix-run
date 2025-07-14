@@ -193,7 +193,7 @@ cd ssr-feature-flag-remix-run
 npm install
 ```
 
-## 💻 Start the Development Server
+3. **Start dev server**
 
 ```bash
 npm run dev
