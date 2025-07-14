@@ -8,6 +8,7 @@ export default defineConfig({
   ignoredRouteFiles: ["**/.*"],
   appDirectory: "app",
   assetsBuildDirectory: "public/build",
+  publicPath: "/build/",
   future: {
     v2_routeConvention: true,
     v2_meta: true,
@@ -16,3 +17,4 @@ export default defineConfig({
     v2_normalizeFormMethod: true,
   },
 });
+

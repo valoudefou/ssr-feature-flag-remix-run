@@ -6,12 +6,24 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [remix(), tsconfigPaths(), react()],
   ssr: {
-    noExternal: ["@flagship.io/react-sdk", "@flagship.io/js-sdk"], // avoid externalizing these for SSR
+    noExternal: ["@flagship.io/react-sdk", "@flagship.io/js-sdk"],
   },
   optimizeDeps: {
-    include: ["@flagship.io/react-sdk", "@flagship.io/js-sdk"], // pre-bundle these dependencies
+    include: ["@flagship.io/react-sdk", "@flagship.io/js-sdk"],
   },
   build: {
-    target: "esnext", // modern build target for latest JS features
+    target: "esnext",
+  },
+  server: {
+    hmr: {
+      overlay: false, // disables the error overlay, can reduce conflicts
+      // Or fully disable HMR (not recommended)
+      // protocol: 'ws',
+      // clientPort: 0,
+      // host: 'localhost',
+      // timeout: 30000,
+      // path: '/hmr',
+      // port: 24678,
+    },
   },
 });
