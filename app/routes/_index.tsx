@@ -134,7 +134,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 // Main React component for the page
 export default function Index() {
 
-  const [showTextInput, setShowTextInput] = useState(true);
+  const [showTextInput, setShowTextInput] = useState(false);
   // Get loader data
   const { products, flagValue, blockName, logs } = useLoaderData<LoaderData>();
   const carouselRef = useRef<HTMLDivElement>(null);
