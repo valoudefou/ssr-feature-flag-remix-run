@@ -30,18 +30,18 @@ export const loader: LoaderFunction = async ({ request }) => {
   const logs: string[] = [];
 
   try {
-    logs.push("[Loader] Parsing URL and getting custom flagValue");
+    logs.push("[Loader][Info] Parsing URL and getting custom flagValue");
     const url = new URL(request.url);
     const customFlagValue = url.searchParams.get("flagValue") || undefined;
 
     const visitorId = uuidv4();
-    logs.push(`[Loader] Generated visitorId: ${visitorId}`);
+    logs.push(`[Loader][Info] Generated visitorId: ${visitorId}`);
 
     if (!process.env.SITE_ID || !process.env.RECS_BEARER) {
-      logs.push("[Loader] Missing SITE_ID or RECS_BEARER environment variables");
+      logs.push("[Loader][Info] Missing SITE_ID or RECS_BEARER environment variables");
       throw new Error("Missing SITE_ID or RECS_BEARER environment variables");
     }
-    logs.push("[Loader] Environment variables verified");
+    logs.push("[Loader][Info] Environment variables verified");
 
     const visitor = await getFsVisitorData({
       id: visitorId,
@@ -50,20 +50,20 @@ export const loader: LoaderFunction = async ({ request }) => {
         Session: "Returning",
       },
     });
-    logs.push(`[Loader] Reading user context: ${visitor.context ? JSON.stringify(visitor.context) : "No context available"}`);
-    logs.push("[Loader] Fetching Flagship visitor data");
-    logs.push("[Loader] Visitor data fetched");
+    logs.push(`[Loader][Info] Reading user context: ${visitor.context ? JSON.stringify(visitor.context) : "No context available"}`);
+    logs.push("[Loader][Info] Fetching Flagship visitor data");
+    logs.push("[Loader][Info] Visitor data fetched");
 
     const flag = visitor.getFlag("flagProductRecs");
     const fallbackFlagValue = flag?.getValue("07275641-4a2e-49b2-aa5d-bb4b7b8b2a4c");
     const flagValue = customFlagValue || fallbackFlagValue;
     const flagKey = (flag as any)?._key || "unknown";
 
-    logs.push(`[Loader] Flag key fetched: ${flagKey}`);
-    logs.push(`[Loader] Using flagValue: ${flagValue}`);
-    logs.push(`[Loader] Campaign type: ${JSON.stringify(flag.metadata.campaignType)}`);
-    logs.push(`[Loader] Campaign mame: ${JSON.stringify(flag.metadata.campaignName)}`);
-    logs.push(`[Loader] CampaignId: ${JSON.stringify(flag.metadata.campaignId)}`);
+    logs.push(`[Loader][Info] Flag key fetched: ${flagKey}`);
+    logs.push(`[Loader][Info] Using flagValue: ${flagValue}`);
+    logs.push(`[Loader][Info] Campaign type: ${JSON.stringify(flag.metadata.campaignType)}`);
+    logs.push(`[Loader][Info] Campaign mame: ${JSON.stringify(flag.metadata.campaignName)}`);
+    logs.push(`[Loader][Info] CampaignId: ${JSON.stringify(flag.metadata.campaignId)}`);
 
     const query = JSON.stringify({ viewing_item: "456" });
     const fields = JSON.stringify(["id", "name", "img_link", "price"]);
@@ -73,7 +73,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 
     if (flagValue) {
       try {
-        logs.push(`[Loader] Fetching recommendations for flagValue ${flagValue}`);
+        logs.push(`[Loader][Info] Fetching recommendations for flagValue ${flagValue}`);
         const recoUrl = `https://uc-info.eu.abtasty.com/v1/reco/${process.env.SITE_ID}/recos/${flagValue}?variables=${encodeURIComponent(
           query
         )}&fields=${encodeURIComponent(fields)}`;
@@ -86,42 +86,26 @@ export const loader: LoaderFunction = async ({ request }) => {
 
         if (!res.ok) {
           const errorText = await res.text();
-          logs.push(`[Loader] Failed to fetch recommendations: ${res.status} ${res.statusText} - ${errorText}`);
+          logs.push(`[Loader][Info] Failed to fetch recommendations: ${res.status} ${res.statusText} - ${errorText}`);
           blockName = "Our Top Picks For You";
         } else {
           const data = await res.json();
           products = data.items || [];
           blockName = data.name || "Our Top Picks For You";
-          logs.push(`[Loader] Recommendations fetched: ${products.length}`);
-          logs.push(`[Loader] Block name: ${blockName}`);
+          logs.push(`[Loader][Info] Recommendations fetched: ${products.length}`);
+          logs.push(`[Loader][Info] Block name: ${blockName}`);
         }
       } catch (err) {
-        logs.push(`[Loader] Recommendation API fetch error: ${String(err)}`);
+        logs.push(`[Loader][Info] Recommendation API fetch error: ${String(err)}`);
         blockName = "Our Top Picks For You";
       }
     } else {
-      logs.push("[Loader] No flagValue provided, using default block name");
+      logs.push("[Loader][Info] No flagValue provided, using default block name");
       blockName = "Our Top Picks For You";
     }
 
-    // Optionally fetch all reco blocks for debug logging
-    try {
-      const baseRecoUrl = `https://uc-info.eu.abtasty.com/v1/reco/`;
-      const allRecosRes = await fetch(baseRecoUrl, {
-        headers: {
-          Authorization: `Bearer ${process.env.RECS_BEARER}`,
-        },
-      });
-
-      if (!allRecosRes.ok) {
-        const errText = await allRecosRes.text();
-        logs.push(`[Loader] Could not fetch all recos: ${allRecosRes.status} ${allRecosRes.statusText} - ${errText}`);
-      } else {
-        const allRecos = await allRecosRes.text();
-      }
-    } catch (e) {
-
-    }
+   
+   
 
     return json<LoaderData>({
       products,
@@ -149,8 +133,10 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 // Main React component for the page
 export default function Index() {
+
+  const [showTextInput, setShowTextInput] = useState(false);
   // Get loader data
-  const { products, flagValue, blockName, visitorId, logs, flagKey, userContext } = useLoaderData<LoaderData>();
+  const { products, flagValue, blockName, logs } = useLoaderData<LoaderData>();
   const carouselRef = useRef<HTMLDivElement>(null);
 
   // State for carousel scroll buttons
@@ -264,7 +250,7 @@ export default function Index() {
         {/* Debug info block */}
 <div className="flex-grow px-4 py-6 mt-10 pb-8 bg-[#0f2600] rounded-l shadow-inner font-mono text-sm text-green-400">
   <div className="px-1 mb-3 uppercase text-sm tracking-widest font-bold text-green-400 drop-shadow-[0_1px_1px_rgba(0,255,0,0.7)]">
-    DEBUG INFO
+    SERVER DEBUG INFO
   </div>
   <div className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-green-700 scrollbar-track-green-900">
     {logs.map((log, i) => (
@@ -280,37 +266,92 @@ export default function Index() {
 
 
 
-          {/* Floating bottom-right form for changing flag value */}
-          <div
-            className="fixed bottom-4 right-4 w-80 bg-white border border-gray-300 rounded-lg shadow-lg p-4 z-50"
-            style={{ minWidth: "320px" }}
-          >
-            <form method="get" className="space-y-2">
-              <label className="block font-medium text-gray-700">
-                Flag Reco Strategy:
-                <select
-                  name="flagValue"
-                  defaultValue={flagValue}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {/* List of available flag values */}
-                  <option value="9174ac6d-6b74-4234-b412-7d2d0d4acdad">9174ac6d-6b74-4234-b412-7d2d0d4acdad</option>
-                  <option value="b7c76816-dcf3-4c0c-9023-a80a3a348151">b7c76816-dcf3-4c0c-9023-a80a3a348151</option>
-                  <option value="b24cc1cb-bf79-4784-b23b-0a66b3593509">b24cc1cb-bf79-4784-b23b-0a66b3593509</option>
-                  <option value="e5570bbc-9f91-48ec-b0ec-5d6ab941e402">e5570bbc-9f91-48ec-b0ec-5d6ab941e402</option>
-                  <option value="875bb146-4a9c-4e26-ab67-02b2ccb87ca1">875bb146-4a9c-4e26-ab67-02b2ccb87ca1</option>
-                  <option value="07275641-4a2e-49b2-aa5d-bb4b7b8b2a4c">07275641-4a2e-49b2-aa5d-bb4b7b8b2a4c</option>
-                  <option value="2e2c9992-2c5d-466a-bded-71cb2a059730">2e2c9992-2c5d-466a-bded-71cb2a059730</option>
-                </select>
-              </label>
-              <button
-                type="submit"
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow hover:bg-blue-700 transition"
-              >
-                Submit
-              </button>
-            </form>
+ {/* Floating bottom-right form for changing flag value */}
+    <div
+      className="fixed bottom-4 right-4 w-80 bg-white border border-gray-300 rounded-lg shadow-lg p-4 z-50"
+      style={{ minWidth: "320px" }}
+    >
+      {showTextInput ? (
+        <form method="get" className="space-y-2">
+          <label className="block font-medium text-gray-700">
+            Flag Reco Strategy:
+            <input
+              name="flagValue"
+              defaultValue={flagValue}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Type something..."
+              style={{ padding: "8px", fontSize: "16px", marginTop: "4px" }}
+            />
+          </label>
+
+          <div className="flex gap-2 items-center justify-between">
+            <button
+              type="submit"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow hover:bg-blue-700 transition"
+            >
+              Submit
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowTextInput(false)}
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Back to list
+            </button>
           </div>
+        </form>
+      ) : (
+        <form method="get" className="space-y-2">
+          <label className="block font-medium text-gray-700">
+            Flag Reco Strategy:
+            <select
+              name="flagValue"
+              defaultValue={flagValue}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="9174ac6d-6b74-4234-b412-7d2d0d4acdad">
+                9174ac6d-6b74-4234-b412-7d2d0d4acdad
+              </option>
+              <option value="b7c76816-dcf3-4c0c-9023-a80a3a348151">
+                b7c76816-dcf3-4c0c-9023-a80a3a348151
+              </option>
+              <option value="b24cc1cb-bf79-4784-b23b-0a66b3593509">
+                b24cc1cb-bf79-4784-b23b-0a66b3593509
+              </option>
+              <option value="e5570bbc-9f91-48ec-b0ec-5d6ab941e402">
+                e5570bbc-9f91-48ec-b0ec-5d6ab941e402
+              </option>
+              <option value="875bb146-4a9c-4e26-ab67-02b2ccb87ca1">
+                875bb146-4a9c-4e26-ab67-02b2ccb87ca1
+              </option>
+              <option value="07275641-4a2e-49b2-aa5d-bb4b7b8b2a4c">
+                07275641-4a2e-49b2-aa5d-bb4b7b8b2a4c
+              </option>
+              <option value="2e2c9992-2c5d-466a-bded-71cb2a059730">
+                2e2c9992-2c5d-466a-bded-71cb2a059730
+              </option>
+            </select>
+          </label>
+
+          <div className="flex gap-2 items-center justify-between">
+            <button
+              type="submit"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow hover:bg-blue-700 transition"
+            >
+              Submit
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowTextInput(true)}
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Change manually
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
+
       
       </section>
     </main>
