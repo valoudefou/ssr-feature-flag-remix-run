@@ -134,7 +134,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 // Main React component for the page
 export default function Index() {
 
-  const [showTextInput, setShowTextInput] = useState(false);
+  const [showTextInput, setShowTextInput] = useState(true);
   // Get loader data
   const { products, flagValue, blockName, logs } = useLoaderData<LoaderData>();
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -274,11 +274,11 @@ export default function Index() {
       {showTextInput ? (
         <form method="get" className="space-y-2">
           <label className="block font-medium text-gray-700">
-            Flag Reco Strategy:
+            AB Tasty Reco ID:
             <input
               name="flagValue"
               defaultValue={flagValue}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-2 py-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Type something..."
             />
           </label>
@@ -306,7 +306,7 @@ export default function Index() {
             <select
               name="flagValue"
               defaultValue={flagValue}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-2 py-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="9174ac6d-6b74-4234-b412-7d2d0d4acdad">
                 9174ac6d-6b74-4234-b412-7d2d0d4acdad
