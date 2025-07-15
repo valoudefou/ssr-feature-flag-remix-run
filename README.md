@@ -47,10 +47,23 @@ Feature flags allow you to dynamically toggle features and content variations in
 
 ## Setup Instructions
 
-1. **Install dependencies**
+1. **Install dependencies and start dev server**
+
+```bash
+git clone https://github.com/valoudefou/ssr-feature-flag-remix-run.git
+cd ssr-feature-flag-remix-run
+```
 
 ```bash
 npm install @flagship.io/react-sdk remix react react-dom
+```
+
+```bash
+npm install
+```
+
+```bash
+npm run dev
 ```
 
 2. **Environment variables**
@@ -174,29 +187,6 @@ export default function Index() {
   const { flagValue } = useLoaderData();
   return <div>Flag value: {flagValue}</div>;
 }
-```
-
----
-
-## 📦 Installation
-
-1. **Clone the repository**
-
-```bash
-git clone https://github.com/valoudefou/ssr-feature-flag-remix-run.git
-cd ssr-feature-flag-remix-run
-```
-
-2. **Install dependencies**
-
-```bash
-npm install
-```
-
-3. **Start dev server**
-
-```bash
-npm run dev
 ```
 
 ---
