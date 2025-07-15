@@ -280,7 +280,6 @@ export default function Index() {
               defaultValue={flagValue}
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Type something..."
-              style={{ padding: "8px", fontSize: "16px", marginTop: "4px" }}
             />
           </label>
 
