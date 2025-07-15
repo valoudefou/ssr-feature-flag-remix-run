@@ -277,7 +277,7 @@ export default function Index() {
             AB Tasty Reco ID:
             <input
               name="flagValue"
-              defaultValue={flagValue}
+              defaultValue="2e2c9992-2c5d-466a-bded-71cb2a059730"
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-2 py-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Type something..."
             />
