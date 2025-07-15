@@ -302,7 +302,7 @@ export default function Index() {
       ) : (
         <form method="get" className="space-y-2">
           <label className="block font-medium text-gray-700">
-            Flag Reco Strategy:
+            AB Tasty Reco ID:
             <select
               name="flagValue"
               defaultValue={flagValue}
