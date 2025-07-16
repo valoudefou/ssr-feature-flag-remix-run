@@ -235,189 +235,245 @@ useEffect(() => {
           >
             {/* Show message if no products */}
             {products.length === 0 && <p className="p-4 text-gray-500">No recommendations available at the moment.</p>}
-            {/* Render each product as a card */}
-            {products.map((product: Product) => (
-              <article
-                onClick={() => {
-                  logs.push(`[Loader][Info] Data sent to analytics for product ID: ${product.id}, Name: ${product.name}`);
-                }}
-                key={product.id}
-                className="inline-block min-w-[220px] max-w-[240px] bg-white rounded-2xl shadow hover:shadow-lg transition-shadow duration-300 mx-3 align-top"
-                >
-                <img
-                  src={product.img_link}
-                  alt={product.name}
-                  className="w-full h-40 object-contain p-4"
-                  loading="lazy"
-                  width={240}
-                  height={160}
-                  decoding="async"
-                  {...{ fetchpriority: "low" }}
-                />
-                <div className="px-4 pb-4">
-                  <h2 className="text-base font-semibold truncate">{product.name}</h2>
-                  <p className="text-gray-800 font-semibold text-lg mt-1">{cleanPrice(product.price)}</p>
-                </div>
-              </article>
-            ))}
+           {/* Render each product as a card */}
+{products.map((product: Product) => (
+  <article
+    onClick={() => {
+      logs.push(`[Loader][Info] Data sent to analytics for product ID: ${product.id}, Name: ${product.name}`);
+    }}
+    key={product.id}
+    className="group inline-block min-w-[220px] max-w-[240px] bg-white/95 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-xl hover:border-gray-200 transition-all duration-300 mx-3 align-top cursor-pointer overflow-hidden"
+  >
+    {/* Image container with loading state */}
+    <div className="relative w-full h-40 bg-gray-50 rounded-t-xl overflow-hidden">
+      <img
+        src={product.img_link}
+        alt={product.name}
+        className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+        loading="lazy"
+        width={240}
+        height={160}
+        decoding="async"
+        {...{ fetchpriority: "low" }}
+      />
+      
+      {/* Subtle overlay on hover */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+    </div>
+
+    {/* Content */}
+    <div className="px-5 py-4 space-y-2">
+      <h2 className="text-sm font-semibold text-gray-900 truncate group-hover:text-blue-600 transition-colors duration-200">
+        {product.name}
+      </h2>
+      
+      <div className="flex items-center justify-between">
+        <p className="text-lg font-bold text-gray-900">
+          {cleanPrice(product.price)}
+        </p>
+        
+        {/* Subtle action indicator */}
+        <div className="w-6 h-6 rounded-full bg-gray-100 group-hover:bg-blue-100 flex items-center justify-center transition-colors duration-200">
+          <svg 
+            className="w-3 h-3 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    {/* Bottom accent line */}
+    <div className="h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+  </article>
+))}
+
           </div>
         </div>
 
      
 
-        {/* Debug info block */}
-<div className="flex-grow mt-10 px-4 py-6 pb-8 bg-[#0f2600] shadow-inner font-mono text-sm text-green-400">
-  <div className="px-1 mb-3 uppercase text-sm tracking-widest font-bold text-green-400">
-    SERVER DEBUG INFO
-  </div>
-  <div className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-green-700 scrollbar-track-green-900">
-    {logs.map((log, i) => (
-      <div
-        key={i}
-        className="select-text whitespace-pre-wrap bg-[#112d00] px-1"
-      >
-        {log}
+{/* Debug info block */}
+<div className="flex-grow mt-8 mx-4 mb-4 bg-gray-900/95 backdrop-blur-sm border border-gray-700/50 rounded-xl shadow-2xl overflow-hidden">
+  {/* Header */}
+  <div className="px-6 py-4 bg-gradient-to-r from-gray-800 to-gray-900 border-b border-gray-700/50">
+    <div className="flex items-center gap-3">
+      <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse"></div>
+      <h3 className="text-sm font-semibold text-gray-200 tracking-wide uppercase">
+        Server Debug Info
+      </h3>
+      <div className="ml-auto text-xs text-gray-400 font-mono">
+        {logs.length} entries
       </div>
-    ))}
+    </div>
+  </div>
+
+  {/* Content */}
+  <div className="relative">
+    <div className="max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800/50">
+      <div className="p-4 space-y-1">
+        {logs.map((log, i) => (
+          <div
+            key={i}
+            className="group relative px-3 py-2 text-sm font-mono text-green-300 bg-gray-800/30 hover:bg-gray-800/50 rounded-md border border-transparent hover:border-gray-700/50 transition-all duration-150 select-text"
+          >
+            <div className="absolute left-1 top-2 w-1 h-4 bg-green-400/30 rounded-full group-hover:bg-green-400/50 transition-colors"></div>
+            <div className="pl-4 whitespace-pre-wrap break-all">
+              {log}
+            </div>
+          </div>
+        ))}
+        
+        {logs.length === 0 && (
+          <div className="flex items-center justify-center py-12 text-gray-500">
+            <div className="text-center">
+              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-800 flex items-center justify-center">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <p className="text-sm font-medium">No debug logs yet</p>
+              <p className="text-xs text-gray-600 mt-1">Logs will appear here as they're generated</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+
+    {/* Fade overlay for better UX when scrolling */}
+    <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-gray-900/95 to-transparent pointer-events-none"></div>
   </div>
 </div>
 
 
 
- {/* Floating bottom-right form for changing flag value */}
-    <div
-      className="fixed bottom-4 right-4 w-80 bg-white border border-gray-300 rounded-lg shadow-lg p-4 z-50"
-      style={{ minWidth: "320px" }}
-    >
-      {showTextInput ? (
-        <form method="get" className="justify-between">
-               
-          <label className="block font-medium text-gray-700 justify-center">
-            <select
-              name="accountValue"
-              defaultValue={customAccountValue ?? ""}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-2 py-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="account-1">
-                Account 1
-              </option>
-              <option value="account-2">
-                Account 2
-              </option>
-              <option value="account-3">
-                Account 3
-              </option>
-              <option value="account-4">
-                Account 4
-              </option>
-            </select>
-          </label>
+{/* Floating bottom-right form for changing flag value */}
+<div className="fixed bottom-6 right-6 w-80 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl shadow-xl p-6 z-50 transition-all duration-200 hover:shadow-2xl">
+  {showTextInput ? (
+    <form method="get" className="space-y-4">
+      {/* Account Selection */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-900">
+          Account
+        </label>
+        <select
+          name="accountValue"
+          defaultValue={customAccountValue ?? ""}
+          className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
+        >
+          <option value="account-1">Account 1</option>
+          <option value="account-2">Account 2</option>
+          <option value="account-3">Account 3</option>
+          <option value="account-4">Account 4</option>
+        </select>
+      </div>
 
- 
-          
+      {/* Manual Input */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-900">
+          AB Tasty Reco ID
+        </label>
+        <input
+          name="flagValue"
+          defaultValue="2e2c9992-2c5d-466a-bded-71cb2a059730"
+          className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none font-mono"
+          placeholder="Enter custom ID..."
+        />
+      </div>
 
-          <label className="block font-medium text-gray-700">
-            AB Tasty Reco ID:
-            <input
-              name="flagValue"
-              defaultValue="2e2c9992-2c5d-466a-bded-71cb2a059730"
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-2 py-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Type something..."
-            />
-          </label>
+      {/* Actions */}
+      <div className="flex items-center justify-between pt-2">
+        <button
+          type="submit"
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-150 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+        >
+          Apply
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowTextInput(false)}
+          className="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-150"
+        >
+          ← Back to presets
+        </button>
+      </div>
+    </form>
+  ) : (
+    <form method="get" className="space-y-4">
+      {/* Account Selection */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-900">
+          Account
+        </label>
+        <select
+          name="accountValue"
+          defaultValue={customAccountValue ?? ""}
+          className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
+        >
+          <option value="account-1">Account 1</option>
+          <option value="account-2">Account 2</option>
+          <option value="account-3">Account 3</option>
+          <option value="account-4">Account 4</option>
+        </select>
+      </div>
 
-          <div className="flex gap-2 items-center justify-between">
-            <button
-              type="submit"
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow hover:bg-blue-700 transition"
-            >
-              Submit
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowTextInput(false)}
-              className="text-sm text-blue-600 hover:underline"
-            >
-              Back to list
-            </button>
-          </div>
-        </form>
-      ) : (
-        <form method="get" className="space-y-2">
-            
-          <label className="block font-medium text-gray-700 justify-center">
-            <select
-              name="accountValue"
-              defaultValue={customAccountValue ?? ""}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-2 py-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="account-1">
-                Account 1
-              </option>
-              <option value="account-2">
-                Account 2
-              </option>
-              <option value="account-3">
-                Account 3
-              </option>
-              <option value="account-4">
-                Account 4
-              </option>
-            </select>
-          </label>
+      {/* Preset Selection */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-900">
+          AB Tasty Reco ID
+        </label>
+        <select
+          name="flagValue"
+          defaultValue={flagValue ?? ""}
+          className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none font-mono"
+        >
+          <option value="9174ac6d-6b74-4234-b412-7d2d0d4acdad">
+            9174ac6d...4acdad
+          </option>
+          <option value="b7c76816-dcf3-4c0c-9023-a80a3a348151">
+            b7c76816...348151
+          </option>
+          <option value="b24cc1cb-bf79-4784-b23b-0a66b3593509">
+            b24cc1cb...593509
+          </option>
+          <option value="e5570bbc-9f91-48ec-b0ec-5d6ab941e402">
+            e5570bbc...41e402
+          </option>
+          <option value="875bb146-4a9c-4e26-ab67-02b2ccb87ca1">
+            875bb146...cb87ca1
+          </option>
+          <option value="07275641-4a2e-49b2-aa5d-bb4b7b8b2a4c">
+            07275641...8b2a4c
+          </option>
+          <option value="2e2c9992-2c5d-466a-bded-71cb2a059730">
+            2e2c9992...059730
+          </option>
+        </select>
+      </div>
 
+      {/* Actions */}
+      <div className="flex items-center justify-between pt-2">
+        <button
+          type="submit"
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-150 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+        >
+          Apply
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowTextInput(true)}
+          className="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-150"
+        >
+          Custom ID →
+        </button>
+      </div>
+    </form>
+  )}
+</div>
 
-          
-      
-          <label className="block font-medium text-gray-700">
-            AB Tasty Reco ID:
-            <select
-              name="flagValue"
-              defaultValue={flagValue ?? ""}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-2 py-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="9174ac6d-6b74-4234-b412-7d2d0d4acdad">
-                9174ac6d-6b74-4234-b412-7d2d0d4acdad
-              </option>
-              <option value="b7c76816-dcf3-4c0c-9023-a80a3a348151">
-                b7c76816-dcf3-4c0c-9023-a80a3a348151
-              </option>
-              <option value="b24cc1cb-bf79-4784-b23b-0a66b3593509">
-                b24cc1cb-bf79-4784-b23b-0a66b3593509
-              </option>
-              <option value="e5570bbc-9f91-48ec-b0ec-5d6ab941e402">
-                e5570bbc-9f91-48ec-b0ec-5d6ab941e402
-              </option>
-              <option value="875bb146-4a9c-4e26-ab67-02b2ccb87ca1">
-                875bb146-4a9c-4e26-ab67-02b2ccb87ca1
-              </option>
-              <option value="07275641-4a2e-49b2-aa5d-bb4b7b8b2a4c">
-                07275641-4a2e-49b2-aa5d-bb4b7b8b2a4c
-              </option>
-              <option value="2e2c9992-2c5d-466a-bded-71cb2a059730">
-                2e2c9992-2c5d-466a-bded-71cb2a059730
-              </option>
-            </select>
-          </label>
-
-          <div className="flex gap-2 items-center justify-between">
-            <button
-              type="submit"
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow hover:bg-blue-700 transition"
-            >
-              Submit
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowTextInput(true)}
-              className="text-sm text-blue-600 hover:underline"
-            >
-              Change manually
-            </button>
-          </div>
-        </form>
-      )}
-    </div>
 
       
       </section>
