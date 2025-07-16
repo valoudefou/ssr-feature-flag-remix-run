@@ -3,7 +3,7 @@
 import { json, LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { getFsVisitorData } from "../utils/flagship.server";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 // Type definitions for product and loader data
@@ -17,6 +17,7 @@ interface Product {
 interface LoaderData {
   products: Product[];
   flagValue?: string;
+  customAccountValue: string | null; // <-- add this
   blockName: string;
   visitorId: string;
   flagKey: string;
@@ -31,8 +32,9 @@ export const loader: LoaderFunction = async ({ request }) => {
 
   try {
     logs.push("[Loader][Info] Parsing URL and getting custom flagValue");
-    const url = new URL(request.url);
-    const customFlagValue = url.searchParams.get("flagValue") || undefined;
+const url = new URL(request.url);
+const customFlagValue = url.searchParams.get("flagValue") || undefined;
+const customAccountValue = String(url.searchParams.get("accountValue") ?? "");
 
     const visitorId = uuidv4();
     logs.push(`[Loader][Info] Generated visitorId: ${visitorId}`);
@@ -112,6 +114,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       flagValue,
       blockName,
       visitorId,
+      customAccountValue,
       flagKey,
       userContext: visitor.context,
       logs,
@@ -124,6 +127,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       blockName: "Our Top Picks For You",
       visitorId: "",
       flagKey: "",
+      customAccountValue: null,
       userContext: {},
       logs,
     });
@@ -136,8 +140,17 @@ export default function Index() {
 
   const [showTextInput, setShowTextInput] = useState(false);
   // Get loader data
-  const { products, flagValue, blockName, logs } = useLoaderData<LoaderData>();
+  const { products, flagValue, blockName, logs, customAccountValue } = useLoaderData<LoaderData>();
   const carouselRef = useRef<HTMLDivElement>(null);
+const [account, setAccount] = useState(customAccountValue || undefined);
+
+useEffect(() => {
+  if (customAccountValue) {
+    setAccount(customAccountValue);
+    console.log(account);
+  }
+}, [customAccountValue]);
+
 
   // State for carousel scroll buttons
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -170,6 +183,9 @@ export default function Index() {
     <main className="min-h-screen flex flex-col bg-gray-50">
       {/* Recommendations Block */}
       <section aria-label="Product recommendations" className="p-8 py-10 flex flex-col">
+
+   
+      
         <h1 className="py-4 px-4 text-3xl font-bold mb-4 text-gray-900">{blockName}</h1>
 
         <div className="relative">
@@ -223,7 +239,7 @@ export default function Index() {
             {products.map((product: Product) => (
               <article
                 onClick={() => {
-                  logs.push(`[Loader] Data sent to analytics for product ID: ${product.id}, Name: ${product.name}`);
+                  logs.push(`[Loader][Info] Data sent to analytics for product ID: ${product.id}, Name: ${product.name}`);
                 }}
                 key={product.id}
                 className="inline-block min-w-[220px] max-w-[240px] bg-white rounded-2xl shadow hover:shadow-lg transition-shadow duration-300 mx-3 align-top"
@@ -247,9 +263,42 @@ export default function Index() {
           </div>
         </div>
 
+                       <form method="get" className="space-y-2 py-6 mt-4 px-2 flex items-end">
+          <label className="block font-medium text-gray-700 justify-center">
+            <select
+              name="accountValue"
+              defaultValue={customAccountValue ?? ""}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-2 py-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="account-1">
+                Account 1
+              </option>
+              <option value="account-2">
+                Account 2
+              </option>
+              <option value="account-3">
+                Account 3
+              </option>
+              <option value="account-4">
+                Account 4
+              </option>
+            </select>
+          </label>
+
+          <div className="flex gap-2 items-center justify-between">
+            <button
+              type="submit"
+              className="ml-2 inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow hover:bg-blue-700 transition"
+            >
+              Connect
+            </button>
+          </div>
+          
+        </form>
+
         {/* Debug info block */}
-<div className="flex-grow px-4 py-6 mt-10 pb-8 bg-[#0f2600] rounded-l shadow-inner font-mono text-sm text-green-400">
-  <div className="px-1 mb-3 uppercase text-sm tracking-widest font-bold text-green-400 drop-shadow-[0_1px_1px_rgba(0,255,0,0.7)]">
+<div className="flex-grow px-4 py-6 pb-8 bg-[#0f2600] shadow-inner font-mono text-sm text-green-400">
+  <div className="px-1 mb-3 uppercase text-sm tracking-widest font-bold text-green-400">
     SERVER DEBUG INFO
   </div>
   <div className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-green-700 scrollbar-track-green-900">
@@ -272,7 +321,7 @@ export default function Index() {
       style={{ minWidth: "320px" }}
     >
       {showTextInput ? (
-        <form method="get" className="space-y-2">
+        <form method="get" className="justify-between">
           <label className="block font-medium text-gray-700">
             AB Tasty Reco ID:
             <input
@@ -305,7 +354,7 @@ export default function Index() {
             AB Tasty Reco ID:
             <select
               name="flagValue"
-              defaultValue={flagValue}
+              defaultValue={flagValue ?? ""}
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-2 py-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="9174ac6d-6b74-4234-b412-7d2d0d4acdad">
