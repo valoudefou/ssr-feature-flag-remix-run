@@ -263,41 +263,10 @@ useEffect(() => {
           </div>
         </div>
 
-                       <form method="get" className="space-y-2 py-6 mt-4 px-2 flex items-end">
-          <label className="block font-medium text-gray-700 justify-center">
-            <select
-              name="accountValue"
-              defaultValue={customAccountValue ?? ""}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-2 py-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="account-1">
-                Account 1
-              </option>
-              <option value="account-2">
-                Account 2
-              </option>
-              <option value="account-3">
-                Account 3
-              </option>
-              <option value="account-4">
-                Account 4
-              </option>
-            </select>
-          </label>
-
-          <div className="flex gap-2 items-center justify-between">
-            <button
-              type="submit"
-              className="ml-2 inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow hover:bg-blue-700 transition"
-            >
-              Connect
-            </button>
-          </div>
-          
-        </form>
+     
 
         {/* Debug info block */}
-<div className="flex-grow px-4 py-6 pb-8 bg-[#0f2600] shadow-inner font-mono text-sm text-green-400">
+<div className="flex-grow mt-10 px-4 py-6 pb-8 bg-[#0f2600] shadow-inner font-mono text-sm text-green-400">
   <div className="px-1 mb-3 uppercase text-sm tracking-widest font-bold text-green-400">
     SERVER DEBUG INFO
   </div>
@@ -322,6 +291,31 @@ useEffect(() => {
     >
       {showTextInput ? (
         <form method="get" className="justify-between">
+               
+          <label className="block font-medium text-gray-700 justify-center">
+            <select
+              name="accountValue"
+              defaultValue={customAccountValue ?? ""}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-2 py-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="account-1">
+                Account 1
+              </option>
+              <option value="account-2">
+                Account 2
+              </option>
+              <option value="account-3">
+                Account 3
+              </option>
+              <option value="account-4">
+                Account 4
+              </option>
+            </select>
+          </label>
+
+ 
+          
+
           <label className="block font-medium text-gray-700">
             AB Tasty Reco ID:
             <input
@@ -350,6 +344,31 @@ useEffect(() => {
         </form>
       ) : (
         <form method="get" className="space-y-2">
+            
+          <label className="block font-medium text-gray-700 justify-center">
+            <select
+              name="accountValue"
+              defaultValue={customAccountValue ?? ""}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-2 py-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="account-1">
+                Account 1
+              </option>
+              <option value="account-2">
+                Account 2
+              </option>
+              <option value="account-3">
+                Account 3
+              </option>
+              <option value="account-4">
+                Account 4
+              </option>
+            </select>
+          </label>
+
+
+          
+      
           <label className="block font-medium text-gray-700">
             AB Tasty Reco ID:
             <select
