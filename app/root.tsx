@@ -24,9 +24,9 @@ export const links: LinksFunction = () => [
 
 export const meta: MetaFunction = () => [
   { charset: "utf-8" },
-  { title: "Your App Title" },
+  { title: "Remix Feature Flag" },
   { name: "viewport", content: "width=device-width, initial-scale=1" },
-  { name: "description", content: "Your app description here" },
+  { name: "description", content: "An app to demonstrate AB Tasty feature flags in SSR Remix + Vite" },
 ];
 
 export default function App() {

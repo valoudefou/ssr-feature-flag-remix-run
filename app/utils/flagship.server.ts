@@ -5,34 +5,55 @@ import {
   LogLevel,
 } from "@flagship.io/react-sdk";
 
-let flagshipInstance: Flagship | null = null;
+let flagshipInstanceDefault: Flagship | null = null;
+let flagshipInstanceDavid: Flagship | null = null;
 
-// Helper to require env vars
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) throw new Error(`Missing environment variable: ${name}`);
   return value;
 }
 
-// Start and return the singleton Flagship SDK instance
 export async function startFlagshipSDK(): Promise<Flagship> {
   if (
-    flagshipInstance &&
-    flagshipInstance.getStatus() !== FSSdkStatus.SDK_NOT_INITIALIZED
+    flagshipInstanceDefault &&
+    flagshipInstanceDefault.getStatus() !== FSSdkStatus.SDK_NOT_INITIALIZED
   ) {
-    return flagshipInstance;
+    return flagshipInstanceDefault;
   }
 
   const envId = requireEnv("FS_ENV_ID");
   const apiKey = requireEnv("FS_API_KEY");
 
-  flagshipInstance = await Flagship.start(envId, apiKey, {
+  // Always create a new instance for account-1
+  flagshipInstanceDefault = await Flagship.start(envId, apiKey, {
     fetchNow: false,
     decisionMode: DecisionMode.DECISION_API,
     logLevel: LogLevel.INFO,
   });
 
-  return flagshipInstance;
+  return flagshipInstanceDefault;
+}
+
+export async function startFlagshipSDKDavid(): Promise<Flagship> {
+  if (
+    flagshipInstanceDavid &&
+    flagshipInstanceDavid.getStatus() !== FSSdkStatus.SDK_NOT_INITIALIZED
+  ) {
+    return flagshipInstanceDavid;
+  }
+
+  const envId = requireEnv("FS_ENV_ID_DAVID");
+  const apiKey = requireEnv("FS_API_KEY_DAVID");
+
+  // Always create a new instance for account-2
+  flagshipInstanceDavid = await Flagship.start(envId, apiKey, {
+    fetchNow: false,
+    decisionMode: DecisionMode.DECISION_API,
+    logLevel: LogLevel.INFO,
+  });
+
+  return flagshipInstanceDavid;
 }
 
 export async function getFsVisitorData(visitorData: {
@@ -49,5 +70,22 @@ export async function getFsVisitorData(visitorData: {
   });
 
   await visitor.fetchFlags();
-  return visitor; // inferred type automatically
+  return visitor;
+}
+
+export async function getFsVisitorDataDavid(visitorData: {
+  id: string;
+  hasConsented: boolean;
+  context: Record<string, any>;
+}) {
+  const flagship = await startFlagshipSDKDavid();
+
+  const visitor = flagship.newVisitor({
+    visitorId: visitorData.id,
+    hasConsented: visitorData.hasConsented,
+    context: visitorData.context,
+  });
+
+  await visitor.fetchFlags();
+  return visitor;
 }
