@@ -2,7 +2,7 @@
 
 import { json, LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { getFsVisitorData } from "../utils/flagship.server";
+import { getFsVisitorData, getFsVisitorDataDavid } from "../utils/flagship.server";
 import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
@@ -35,23 +35,26 @@ export const loader: LoaderFunction = async ({ request }) => {
 const url = new URL(request.url);
 const customFlagValue = url.searchParams.get("flagValue") || undefined;
 const customAccountValue = String(url.searchParams.get("accountValue") ?? "");
+const visitorId = uuidv4();
+const context = {
+  Session: "Returning",
+};
 
-    const visitorId = uuidv4();
-    logs.push(`[Loader][Info] Generated visitorId: ${visitorId}`);
+logs.push(`[Loader][Info] Generated visitorId: ${visitorId}`);
+logs.push(`[Loader][Info] Using Flagship environment for: ${customAccountValue}`);
 
-    if (!process.env.SITE_ID || !process.env.RECS_BEARER) {
-      logs.push("[Loader][Info] Missing SITE_ID or RECS_BEARER environment variables");
-      throw new Error("Missing SITE_ID or RECS_BEARER environment variables");
-    }
-    logs.push("[Loader][Info] Environment variables verified");
-
-    const visitor = await getFsVisitorData({
+const visitor = customAccountValue === "account-2"
+  ? await getFsVisitorDataDavid({
       id: visitorId,
       hasConsented: true,
-      context: {
-        Session: "Returning",
-      },
+      context,
+    })
+  : await getFsVisitorData({
+      id: visitorId,
+      hasConsented: true,
+      context,
     });
+
     logs.push(`[Loader][Info] Reading user context: ${visitor.context ? JSON.stringify(visitor.context) : "No context available"}`);
     logs.push("[Loader][Info] Fetching Flagship visitor data");
     logs.push("[Loader][Info] Visitor data fetched");
@@ -269,7 +272,7 @@ useEffect(() => {
       
       <div className="flex items-center justify-between">
         <p className="text-lg font-bold text-gray-900">
-          {cleanPrice(product.price)}
+          ${cleanPrice(product.price)}
         </p>
         
         {/* Subtle action indicator */}
@@ -318,7 +321,7 @@ useEffect(() => {
         {logs.map((log, i) => (
           <div
             key={i}
-            className="group relative px-3 py-2 text-sm font-mono text-green-300 bg-gray-800/30 hover:bg-gray-800/50 rounded-md border border-transparent hover:border-gray-700/50 transition-all duration-150 select-text"
+            className="group relative px-3 py-1 text-sm font-mono text-green-300 bg-gray-800/30 hover:bg-gray-800/50 rounded-md border border-transparent hover:border-gray-700/50 transition-all duration-150 select-text"
           >
             <div className="absolute left-1 top-2 w-1 h-4 bg-green-400/30 rounded-full group-hover:bg-green-400/50 transition-colors"></div>
             <div className="pl-4 whitespace-pre-wrap break-all">
