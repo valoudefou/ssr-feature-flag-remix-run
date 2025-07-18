@@ -57,8 +57,7 @@ const customAccountValue = String(url.searchParams.get("accountValue") ?? "");
     logs.push("[Loader][Info] Visitor data fetched");
 
     const flag = visitor.getFlag("flagProductRecs");
-    const fallbackFlagValue = flag?.getValue("07275641-4a2e-49b2-aa5d-bb4b7b8b2a4c");
-    const flagValue = customFlagValue || fallbackFlagValue;
+    const flagValue = flag?.getValue("07275641-4a2e-49b2-aa5d-bb4b7b8b2a4c");
     const flagKey = (flag as any)?._key || "unknown";
 
     logs.push(`[Loader][Info] Flag key fetched: ${flagKey}`);
@@ -269,7 +268,7 @@ useEffect(() => {
       
       <div className="flex items-center justify-between">
         <p className="text-lg font-bold text-gray-900">
-          {cleanPrice(product.price)}
+          ${cleanPrice(product.price)}
         </p>
         
         {/* Subtle action indicator */}
@@ -318,7 +317,7 @@ useEffect(() => {
         {logs.map((log, i) => (
           <div
             key={i}
-            className="group relative px-3 py-2 text-sm font-mono text-green-300 bg-gray-800/30 hover:bg-gray-800/50 rounded-md border border-transparent hover:border-gray-700/50 transition-all duration-150 select-text"
+            className="group relative px-3 py-1 text-sm font-mono text-green-300 bg-gray-800/30 hover:bg-gray-800/50 rounded-md border border-transparent hover:border-gray-700/50 transition-all duration-150 select-text"
           >
             <div className="absolute left-1 top-2 w-1 h-4 bg-green-400/30 rounded-full group-hover:bg-green-400/50 transition-colors"></div>
             <div className="pl-4 whitespace-pre-wrap break-all">
@@ -366,8 +365,6 @@ useEffect(() => {
         >
           <option value="account-1">Account 1</option>
           <option value="account-2">Account 2</option>
-          <option value="account-3">Account 3</option>
-          <option value="account-4">Account 4</option>
         </select>
       </div>
 
@@ -415,8 +412,6 @@ useEffect(() => {
         >
           <option value="account-1">Account 1</option>
           <option value="account-2">Account 2</option>
-          <option value="account-3">Account 3</option>
-          <option value="account-4">Account 4</option>
         </select>
       </div>
 
