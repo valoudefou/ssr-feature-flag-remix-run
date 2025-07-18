@@ -2,7 +2,7 @@
 
 import { json, LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { getFsVisitorData } from "../utils/flagship.server";
+import { startFlagshipSDK1, startFlagshipSDK2 } from "../utils/flagship.server";
 import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
@@ -26,15 +26,47 @@ interface LoaderData {
 }
 
 
+// Add these helper functions somewhere in this file or import them
+async function getFsVisitorData1(visitorData: {
+  id: string;
+  hasConsented: boolean;
+  context: Record<string, any>;
+}) {
+  const flagship = await startFlagshipSDK1();
+  const visitor = flagship.newVisitor({
+    visitorId: visitorData.id,
+    hasConsented: visitorData.hasConsented,
+    context: visitorData.context,
+  });
+  await visitor.fetchFlags();
+  return visitor;
+}
+
+async function getFsVisitorData2(visitorData: {
+  id: string;
+  hasConsented: boolean;
+  context: Record<string, any>;
+}) {
+  const flagship = await startFlagshipSDK2();
+  const visitor = flagship.newVisitor({
+    visitorId: visitorData.id,
+    hasConsented: visitorData.hasConsented,
+    context: visitorData.context,
+  });
+  await visitor.fetchFlags();
+  return visitor;
+}
+
+
 // Loader function to fetch data for the page
 export const loader: LoaderFunction = async ({ request }) => {
   const logs: string[] = [];
 
   try {
     logs.push("[Loader][Info] Parsing URL and getting custom flagValue");
-const url = new URL(request.url);
-const customFlagValue = url.searchParams.get("flagValue") || undefined;
-const customAccountValue = String(url.searchParams.get("accountValue") ?? "");
+    const url = new URL(request.url);
+    const customFlagValue = url.searchParams.get("flagValue") || undefined;
+    const customAccountValue = String(url.searchParams.get("accountValue") ?? "");
 
     const visitorId = uuidv4();
     logs.push(`[Loader][Info] Generated visitorId: ${visitorId}`);
@@ -45,13 +77,30 @@ const customAccountValue = String(url.searchParams.get("accountValue") ?? "");
     }
     logs.push("[Loader][Info] Environment variables verified");
 
-    const visitor = await getFsVisitorData({
-      id: visitorId,
-      hasConsented: true,
-      context: {
-        Session: "Returning",
-      },
-    });
+    let visitor;
+    if (customAccountValue === "account-1") {
+      logs.push("[Loader][Info] Using Flagship SDK Instance 1");
+      visitor = await getFsVisitorData1({
+        id: visitorId,
+        hasConsented: true,
+        context: { Session: "Returning" },
+      });
+    } else if (customAccountValue === "account-2") {
+      logs.push("[Loader][Info] Using Flagship SDK Instance 2");
+      visitor = await getFsVisitorData2({
+        id: visitorId,
+        hasConsented: true,
+        context: { Session: "Returning" },
+      });
+    } else {
+      logs.push("[Loader][Info] No valid customAccountValue provided, using default Flagship SDK Instance 1");
+      visitor = await getFsVisitorData1({
+        id: visitorId,
+        hasConsented: true,
+        context: { Session: "Returning" },
+      });
+    }
+
     logs.push(`[Loader][Info] Reading user context: ${visitor.context ? JSON.stringify(visitor.context) : "No context available"}`);
     logs.push("[Loader][Info] Fetching Flagship visitor data");
     logs.push("[Loader][Info] Visitor data fetched");
@@ -64,7 +113,7 @@ const customAccountValue = String(url.searchParams.get("accountValue") ?? "");
     logs.push(`[Loader][Info] Flag key fetched: ${flagKey}`);
     logs.push(`[Loader][Info] Using flagValue: ${flagValue}`);
     logs.push(`[Loader][Info] Campaign type: ${JSON.stringify(flag.metadata.campaignType)}`);
-    logs.push(`[Loader][Info] Campaign mame: ${JSON.stringify(flag.metadata.campaignName)}`);
+    logs.push(`[Loader][Info] Campaign name: ${JSON.stringify(flag.metadata.campaignName)}`);
     logs.push(`[Loader][Info] CampaignId: ${JSON.stringify(flag.metadata.campaignId)}`);
 
     const query = JSON.stringify({ viewing_item: "456" });
@@ -105,9 +154,6 @@ const customAccountValue = String(url.searchParams.get("accountValue") ?? "");
       logs.push("[Loader][Info] No flagValue provided, using default block name");
       blockName = "Our Top Picks For You";
     }
-
-   
-   
 
     return json<LoaderData>({
       products,
@@ -366,8 +412,6 @@ useEffect(() => {
         >
           <option value="account-1">Account 1</option>
           <option value="account-2">Account 2</option>
-          <option value="account-3">Account 3</option>
-          <option value="account-4">Account 4</option>
         </select>
       </div>
 
@@ -415,8 +459,6 @@ useEffect(() => {
         >
           <option value="account-1">Account 1</option>
           <option value="account-2">Account 2</option>
-          <option value="account-3">Account 3</option>
-          <option value="account-4">Account 4</option>
         </select>
       </div>
 
