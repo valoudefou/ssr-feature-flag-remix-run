@@ -57,7 +57,8 @@ const customAccountValue = String(url.searchParams.get("accountValue") ?? "");
     logs.push("[Loader][Info] Visitor data fetched");
 
     const flag = visitor.getFlag("flagProductRecs");
-    const flagValue = flag?.getValue("07275641-4a2e-49b2-aa5d-bb4b7b8b2a4c");
+    const fallbackFlagValue = flag?.getValue("07275641-4a2e-49b2-aa5d-bb4b7b8b2a4c");
+    const flagValue = customFlagValue || fallbackFlagValue;
     const flagKey = (flag as any)?._key || "unknown";
 
     logs.push(`[Loader][Info] Flag key fetched: ${flagKey}`);
@@ -95,6 +96,8 @@ const customAccountValue = String(url.searchParams.get("accountValue") ?? "");
           blockName = data.name || "Our Top Picks For You";
           logs.push(`[Loader][Info] Recommendations fetched: ${products.length}`);
           logs.push(`[Loader][Info] Block name: ${blockName}`);
+          logs.push(`[Loader][Info] URL params in use: ${url}`);
+          logs.push(`[Loader][Info] Account targeted: ${customAccountValue}`);
         }
       } catch (err) {
         logs.push(`[Loader][Info] Recommendation API fetch error: ${String(err)}`);
@@ -317,7 +320,7 @@ useEffect(() => {
         {logs.map((log, i) => (
           <div
             key={i}
-            className="group relative px-3 py-1 text-sm font-mono text-green-300 bg-gray-800/30 hover:bg-gray-800/50 rounded-md border border-transparent hover:border-gray-700/50 transition-all duration-150 select-text"
+            className="group relative px-3 py-2 text-sm font-mono text-green-300 bg-gray-800/30 hover:bg-gray-800/50 rounded-md border border-transparent hover:border-gray-700/50 transition-all duration-150 select-text"
           >
             <div className="absolute left-1 top-2 w-1 h-4 bg-green-400/30 rounded-full group-hover:bg-green-400/50 transition-colors"></div>
             <div className="pl-4 whitespace-pre-wrap break-all">
