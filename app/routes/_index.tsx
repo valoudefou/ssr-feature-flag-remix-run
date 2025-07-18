@@ -2,7 +2,7 @@
 
 import { json, LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { getFsVisitorDataFromInstance1, getFsVisitorDataFromInstance2 } from "../utils/flagship.server";
+import { getFsVisitorData } from "../utils/flagship.server";
 import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
@@ -25,15 +25,16 @@ interface LoaderData {
   logs: string[]; // add this
 }
 
+
 // Loader function to fetch data for the page
 export const loader: LoaderFunction = async ({ request }) => {
   const logs: string[] = [];
 
   try {
     logs.push("[Loader][Info] Parsing URL and getting custom flagValue");
-    const url = new URL(request.url);
-    const customFlagValue = url.searchParams.get("flagValue") || undefined;
-    const customAccountValue = String(url.searchParams.get("accountValue") ?? "");
+const url = new URL(request.url);
+const customFlagValue = url.searchParams.get("flagValue") || undefined;
+const customAccountValue = String(url.searchParams.get("accountValue") ?? "");
 
     const visitorId = uuidv4();
     logs.push(`[Loader][Info] Generated visitorId: ${visitorId}`);
@@ -44,27 +45,13 @@ export const loader: LoaderFunction = async ({ request }) => {
     }
     logs.push("[Loader][Info] Environment variables verified");
 
-    // Choose correct Flagship instance
-    let getVisitorFn;
-    if (customAccountValue === "account-1") {
-      logs.push("[Loader][Info] Using Flagship instance 1");
-      getVisitorFn = getFsVisitorDataFromInstance1;
-    } else if (customAccountValue === "account-2") {
-      logs.push("[Loader][Info] Using Flagship instance 2");
-      getVisitorFn = getFsVisitorDataFromInstance2;
-    } else {
-      logs.push("[Loader][Info] Unknown accountValue; defaulting to instance 1");
-      getVisitorFn = getFsVisitorDataFromInstance1;
-    }
-
-    const visitor = await getVisitorFn({
+    const visitor = await getFsVisitorData({
       id: visitorId,
       hasConsented: true,
       context: {
         Session: "Returning",
       },
     });
-
     logs.push(`[Loader][Info] Reading user context: ${visitor.context ? JSON.stringify(visitor.context) : "No context available"}`);
     logs.push("[Loader][Info] Fetching Flagship visitor data");
     logs.push("[Loader][Info] Visitor data fetched");
@@ -77,7 +64,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     logs.push(`[Loader][Info] Flag key fetched: ${flagKey}`);
     logs.push(`[Loader][Info] Using flagValue: ${flagValue}`);
     logs.push(`[Loader][Info] Campaign type: ${JSON.stringify(flag.metadata.campaignType)}`);
-    logs.push(`[Loader][Info] Campaign name: ${JSON.stringify(flag.metadata.campaignName)}`);
+    logs.push(`[Loader][Info] Campaign mame: ${JSON.stringify(flag.metadata.campaignName)}`);
     logs.push(`[Loader][Info] CampaignId: ${JSON.stringify(flag.metadata.campaignId)}`);
 
     const query = JSON.stringify({ viewing_item: "456" });
@@ -109,8 +96,6 @@ export const loader: LoaderFunction = async ({ request }) => {
           blockName = data.name || "Our Top Picks For You";
           logs.push(`[Loader][Info] Recommendations fetched: ${products.length}`);
           logs.push(`[Loader][Info] Block name: ${blockName}`);
-          logs.push(`[Loader][Info] URL params in use: ${url}`);
-          logs.push(`[Loader][Info] Account targeted: ${customAccountValue}`);
         }
       } catch (err) {
         logs.push(`[Loader][Info] Recommendation API fetch error: ${String(err)}`);
@@ -120,6 +105,9 @@ export const loader: LoaderFunction = async ({ request }) => {
       logs.push("[Loader][Info] No flagValue provided, using default block name");
       blockName = "Our Top Picks For You";
     }
+
+   
+   
 
     return json<LoaderData>({
       products,
@@ -146,9 +134,6 @@ export const loader: LoaderFunction = async ({ request }) => {
   }
 };
 
-type Props = {
-  customAccountValue: string | null;
-};
 
 // Main React component for the page
 export default function Index() {
@@ -284,7 +269,7 @@ useEffect(() => {
       
       <div className="flex items-center justify-between">
         <p className="text-lg font-bold text-gray-900">
-          ${cleanPrice(product.price)}
+          {cleanPrice(product.price)}
         </p>
         
         {/* Subtle action indicator */}
@@ -381,6 +366,8 @@ useEffect(() => {
         >
           <option value="account-1">Account 1</option>
           <option value="account-2">Account 2</option>
+          <option value="account-3">Account 3</option>
+          <option value="account-4">Account 4</option>
         </select>
       </div>
 
@@ -428,6 +415,8 @@ useEffect(() => {
         >
           <option value="account-1">Account 1</option>
           <option value="account-2">Account 2</option>
+          <option value="account-3">Account 3</option>
+          <option value="account-4">Account 4</option>
         </select>
       </div>
 
