@@ -5,53 +5,49 @@ import {
   LogLevel,
 } from "@flagship.io/react-sdk";
 
-let flagshipInstance1: Flagship | null = null;
-let flagshipInstance2: Flagship | null = null;
+let flagshipInstance: Flagship | null = null;
 
+// Helper to require env vars
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) throw new Error(`Missing environment variable: ${name}`);
   return value;
 }
 
-// Initialize and return first Flagship SDK instance
-export async function startFlagshipSDK1(): Promise<Flagship> {
+// Start and return the singleton Flagship SDK instance
+export async function startFlagshipSDK(): Promise<Flagship> {
   if (
-    flagshipInstance1 &&
-    flagshipInstance1.getStatus() !== FSSdkStatus.SDK_NOT_INITIALIZED
+    flagshipInstance &&
+    flagshipInstance.getStatus() !== FSSdkStatus.SDK_NOT_INITIALIZED
   ) {
-    return flagshipInstance1;
+    return flagshipInstance;
   }
 
   const envId = requireEnv("FS_ENV_ID");
   const apiKey = requireEnv("FS_API_KEY");
 
-  flagshipInstance1 = await Flagship.start(envId, apiKey, {
+  flagshipInstance = await Flagship.start(envId, apiKey, {
     fetchNow: false,
     decisionMode: DecisionMode.DECISION_API,
     logLevel: LogLevel.INFO,
   });
 
-  return flagshipInstance1;
+  return flagshipInstance;
 }
 
-// Initialize and return second Flagship SDK instance
-export async function startFlagshipSDK2(): Promise<Flagship> {
-  if (
-    flagshipInstance2 &&
-    flagshipInstance2.getStatus() !== FSSdkStatus.SDK_NOT_INITIALIZED
-  ) {
-    return flagshipInstance2;
-  }
+export async function getFsVisitorData(visitorData: {
+  id: string;
+  hasConsented: boolean;
+  context: Record<string, any>;
+}) {
+  const flagship = await startFlagshipSDK();
 
-  const envId = requireEnv("FS_ENV_ID_DAVID");
-  const apiKey = requireEnv("FS_API_KEY_DAVID");
-
-  flagshipInstance2 = await Flagship.start(envId, apiKey, {
-    fetchNow: false,
-    decisionMode: DecisionMode.DECISION_API,
-    logLevel: LogLevel.INFO,
+  const visitor = flagship.newVisitor({
+    visitorId: visitorData.id,
+    hasConsented: visitorData.hasConsented,
+    context: visitorData.context,
   });
 
-  return flagshipInstance2;
+  await visitor.fetchFlags();
+  return visitor; // inferred type automatically
 }
