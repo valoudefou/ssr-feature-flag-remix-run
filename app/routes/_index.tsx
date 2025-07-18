@@ -2,7 +2,7 @@
 
 import { json, LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { getFsVisitorData } from "../utils/flagship.server";
+import { getFsVisitorDataFromInstance1, getFsVisitorDataFromInstance2 } from "../utils/flagship.server";
 import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
@@ -25,16 +25,15 @@ interface LoaderData {
   logs: string[]; // add this
 }
 
-
 // Loader function to fetch data for the page
 export const loader: LoaderFunction = async ({ request }) => {
   const logs: string[] = [];
 
   try {
     logs.push("[Loader][Info] Parsing URL and getting custom flagValue");
-const url = new URL(request.url);
-const customFlagValue = url.searchParams.get("flagValue") || undefined;
-const customAccountValue = String(url.searchParams.get("accountValue") ?? "");
+    const url = new URL(request.url);
+    const customFlagValue = url.searchParams.get("flagValue") || undefined;
+    const customAccountValue = String(url.searchParams.get("accountValue") ?? "");
 
     const visitorId = uuidv4();
     logs.push(`[Loader][Info] Generated visitorId: ${visitorId}`);
@@ -45,13 +44,27 @@ const customAccountValue = String(url.searchParams.get("accountValue") ?? "");
     }
     logs.push("[Loader][Info] Environment variables verified");
 
-    const visitor = await getFsVisitorData({
+    // Choose correct Flagship instance
+    let getVisitorFn;
+    if (customAccountValue === "account-1") {
+      logs.push("[Loader][Info] Using Flagship instance 1");
+      getVisitorFn = getFsVisitorDataFromInstance1;
+    } else if (customAccountValue === "account-2") {
+      logs.push("[Loader][Info] Using Flagship instance 2");
+      getVisitorFn = getFsVisitorDataFromInstance2;
+    } else {
+      logs.push("[Loader][Info] Unknown accountValue; defaulting to instance 1");
+      getVisitorFn = getFsVisitorDataFromInstance1;
+    }
+
+    const visitor = await getVisitorFn({
       id: visitorId,
       hasConsented: true,
       context: {
         Session: "Returning",
       },
     });
+
     logs.push(`[Loader][Info] Reading user context: ${visitor.context ? JSON.stringify(visitor.context) : "No context available"}`);
     logs.push("[Loader][Info] Fetching Flagship visitor data");
     logs.push("[Loader][Info] Visitor data fetched");
@@ -64,7 +77,7 @@ const customAccountValue = String(url.searchParams.get("accountValue") ?? "");
     logs.push(`[Loader][Info] Flag key fetched: ${flagKey}`);
     logs.push(`[Loader][Info] Using flagValue: ${flagValue}`);
     logs.push(`[Loader][Info] Campaign type: ${JSON.stringify(flag.metadata.campaignType)}`);
-    logs.push(`[Loader][Info] Campaign mame: ${JSON.stringify(flag.metadata.campaignName)}`);
+    logs.push(`[Loader][Info] Campaign name: ${JSON.stringify(flag.metadata.campaignName)}`);
     logs.push(`[Loader][Info] CampaignId: ${JSON.stringify(flag.metadata.campaignId)}`);
 
     const query = JSON.stringify({ viewing_item: "456" });
@@ -108,9 +121,6 @@ const customAccountValue = String(url.searchParams.get("accountValue") ?? "");
       blockName = "Our Top Picks For You";
     }
 
-   
-   
-
     return json<LoaderData>({
       products,
       flagValue,
@@ -136,6 +146,9 @@ const customAccountValue = String(url.searchParams.get("accountValue") ?? "");
   }
 };
 
+type Props = {
+  customAccountValue: string | null;
+};
 
 // Main React component for the page
 export default function Index() {
