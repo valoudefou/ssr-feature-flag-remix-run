@@ -188,10 +188,21 @@ export default function Index() {
     };
   }, [products]);
 
-  // Utility to clean up price formatting
   const cleanPrice = (price: string | number | null) => {
     if (price == null) return "";
-    return String(price).replace(/â‚¬/g, "€");
+
+    // Convert string to number safely, stripping non-numeric characters
+    const num = typeof price === "string"
+      ? parseFloat(price.replace(/[^\d.-]/g, ""))
+      : price;
+
+    if (isNaN(num)) return "";
+
+    // Format with up to 2 decimals, no trailing .00 if unnecessary
+    return num.toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    });
   };
 
   return (
