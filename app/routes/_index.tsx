@@ -380,21 +380,6 @@ export default function Index() {
         <div className="fixed bottom-6 right-6 w-80 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl shadow-xl p-6 z-50 transition-all duration-200 hover:shadow-2xl">
           {showTextInput ? (
             <form method="get" className="space-y-4">
-              {/* Account Selection */}
-              {/* <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-900">
-                  Account
-                </label>
-                <select
-                  name="accountValue"
-                  defaultValue={customAccountValue ?? ""}
-                  className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
-                >
-                  <option value="account-1">Account 1</option>
-                  <option value="account-2">Account 2</option>
-                </select>
-              </div> */}
-
               {/* Manual Input */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-900">
@@ -427,21 +412,6 @@ export default function Index() {
             </form>
           ) : (
             <form method="get" className="space-y-4">
-              {/* Account Selection */}
-              {/* <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-900">
-                  Account
-                </label>
-                <select
-                  name="accountValue"
-                  defaultValue={customAccountValue ?? ""}
-                  className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
-                >
-                  <option value="account-1">Account 1</option>
-                  <option value="account-2">Account 2</option>
-                </select>
-              </div> */}
-
               {/* Preset Selection */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-900">
