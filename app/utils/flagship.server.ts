@@ -4,8 +4,6 @@ import {
   DecisionMode,
   LogLevel,
 } from "@flagship.io/react-sdk";
-import dotenv from "dotenv";
-dotenv.config();
 
 let flagshipInstance: Flagship | null = null;
 
@@ -59,8 +57,8 @@ export async function getFsVisitorData2(visitorData: {
   hasConsented: boolean;
   context: Record<string, any>;
 }) {
-  const envId = requireEnv("FS_ENV_ID_DAVID");
-  const apiKey = requireEnv("FS_API_KEY_DAVID");
+  const envId = requireEnv("FS_ENV_ID_DAVID") || requireEnv("FS_ENV_ID");
+  const apiKey = requireEnv("FS_API_KEY_DAVID") || requireEnv("FS_API_KEY");
 
   const freshFlagshipInstance = await Flagship.start(envId, apiKey, {
     fetchNow: false,
