@@ -48,11 +48,11 @@ export const loader: LoaderFunction = async ({ request }) => {
     const accountLoaders = {
       "account-1": {
         loader: getFsVisitorData,
-        log: "[Loader][Info] Using singleton Flagship instance",
+        log: "[Loader][Info] Initializing SDK",
       },
       "account-2": {
         loader: getFsVisitorData2,
-        log: "[Loader][Info] Using fresh Flagship instance",
+        log: "[Loader][Info] Initializing SDK",
       },
     };
 
