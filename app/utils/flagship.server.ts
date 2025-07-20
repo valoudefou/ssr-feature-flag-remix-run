@@ -30,6 +30,7 @@ async function initializeFlagship(
     fetchNow: false,
     decisionMode: DecisionMode.DECISION_API,
     logLevel: LogLevel.INFO,
+    nextFetchConfig: { revalidate: 15 },
   });
 }
 
