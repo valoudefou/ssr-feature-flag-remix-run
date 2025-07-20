@@ -57,7 +57,7 @@ export const loader: LoaderFunction = async ({ request }) => {
         },
       });
     } else {
-      logs.push("[Loader][Info] Using singleton Flagship instance (default or account-1)");
+      logs.push("[Loader][Info] Using singleton Flagship instance for account-1");
       visitor = await getFsVisitorData({
         id: visitorId,
         hasConsented: true,
