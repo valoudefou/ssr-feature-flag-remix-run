@@ -3,19 +3,38 @@ import {
   FSSdkStatus,
   DecisionMode,
   LogLevel,
+  Visitor,
 } from "@flagship.io/react-sdk";
+
+type VisitorData = {
+  id: string;
+  hasConsented: boolean;
+  context: Record<string, any>;
+};
 
 let flagshipInstance: Flagship | null = null;
 
-// Helper to require env vars
+// Helper to require environment variables
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) throw new Error(`Missing environment variable: ${name}`);
   return value;
 }
 
-// Start and return the singleton Flagship SDK instance
-export async function startFlagshipSDK(): Promise<Flagship> {
+// Initializes a Flagship SDK instance
+async function initializeFlagship(
+  envId: string,
+  apiKey: string
+): Promise<Flagship> {
+  return Flagship.start(envId, apiKey, {
+    fetchNow: false,
+    decisionMode: DecisionMode.DECISION_API,
+    logLevel: LogLevel.INFO,
+  });
+}
+
+// Gets or creates the singleton Flagship instance
+async function getSingletonFlagship(): Promise<Flagship> {
   if (
     flagshipInstance &&
     flagshipInstance.getStatus() !== FSSdkStatus.SDK_NOT_INITIALIZED
@@ -25,55 +44,35 @@ export async function startFlagshipSDK(): Promise<Flagship> {
 
   const envId = requireEnv("FS_ENV_ID");
   const apiKey = requireEnv("FS_API_KEY");
-
-  flagshipInstance = await Flagship.start(envId, apiKey, {
-    fetchNow: false,
-    decisionMode: DecisionMode.DECISION_API,
-    logLevel: LogLevel.INFO,
-  });
-
+  flagshipInstance = await initializeFlagship(envId, apiKey);
   return flagshipInstance;
 }
 
-// Singleton usage
-export async function getFsVisitorData(visitorData: {
-  id: string;
-  hasConsented: boolean;
-  context: Record<string, any>;
-}) {
-  const flagship = await startFlagshipSDK();
-
+// Creates and fetches visitor flags from a given Flagship instance
+async function createVisitorAndFetchFlags(
+  flagship: Flagship,
+  data: VisitorData
+): Promise<Visitor> {
   const visitor = flagship.newVisitor({
-    visitorId: visitorData.id,
-    hasConsented: visitorData.hasConsented,
-    context: visitorData.context,
+    visitorId: data.id,
+    hasConsented: data.hasConsented,
+    context: data.context,
   });
 
   await visitor.fetchFlags();
   return visitor;
 }
 
-// Fresh instance using fallback envs
-export async function getFsVisitorData2(visitorData: {
-  id: string;
-  hasConsented: boolean;
-  context: Record<string, any>;
-}) {
+// Main: uses the shared singleton instance
+export async function getFsVisitorData(data: VisitorData): Promise<Visitor> {
+  const flagship = await getSingletonFlagship();
+  return createVisitorAndFetchFlags(flagship, data);
+}
+
+// Alternate: uses a fresh instance with fallback env vars
+export async function getFsVisitorData2(data: VisitorData): Promise<Visitor> {
   const envId = requireEnv("FS_ENV_ID_DAVID");
   const apiKey = requireEnv("FS_API_KEY_DAVID");
-
-  const freshFlagshipInstance = await Flagship.start(envId, apiKey, {
-    fetchNow: false,
-    decisionMode: DecisionMode.DECISION_API,
-    logLevel: LogLevel.INFO,
-  });
-
-  const visitor = freshFlagshipInstance.newVisitor({
-    visitorId: visitorData.id,
-    hasConsented: visitorData.hasConsented,
-    context: visitorData.context,
-  });
-
-  await visitor.fetchFlags();
-  return visitor;
+  const freshInstance = await initializeFlagship(envId, apiKey);
+  return createVisitorAndFetchFlags(freshInstance, data);
 }
