@@ -44,28 +44,30 @@ export const loader: LoaderFunction = async ({ request }) => {
       throw new Error("Missing SITE_ID or RECS_BEARER environment variables");
     }
     logs.push("[Loader][Info] Environment variables verified");
+    
+    const accountLoaders = {
+      "account-1": {
+        loader: getFsVisitorData,
+        log: "[Loader][Info] Using singleton Flagship instance for account-1",
+      },
+      "account-2": {
+        loader: getFsVisitorData2,
+        log: "[Loader][Info] Using fresh Flagship instance for account-2",
+      },
+    };
 
-    let visitor;
-    if (customAccountValue === "account-2") {
-      logs.push("[Loader][Info] Using fresh Flagship instance for account-2");
+    const accountKey = customAccountValue === "account-2" ? "account-2" : "account-1";
+    const { loader, log } = accountLoaders[accountKey];
 
-      visitor = await getFsVisitorData2({
-        id: visitorId,
-        hasConsented: true,
-        context: {
-          Session: "Returning",
-        },
-      });
-    } else {
-      logs.push("[Loader][Info] Using singleton Flagship instance for account-1");
-      visitor = await getFsVisitorData({
-        id: visitorId,
-        hasConsented: true,
-        context: {
-          Session: "Returning",
-        },
-      });
-    }
+    logs.push(log);
+
+    const visitor = await loader({
+      id: visitorId,
+      hasConsented: true,
+      context: {
+        Session: "Returning",
+      },
+    });
 
     logs.push(`[Loader][Info] Reading user context: ${visitor.context ? JSON.stringify(visitor.context) : "No context available"}`);
     logs.push("[Loader][Info] Fetching Flagship visitor data");
