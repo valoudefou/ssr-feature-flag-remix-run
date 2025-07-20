@@ -153,11 +153,11 @@ export const loader: LoaderFunction = async ({ request }) => {
 // Main React component for the page
 export default function Index() {
 
-  const [showTextInput, setShowTextInput] = useState(false);
   // Get loader data
   const { products, flagValue, blockName, logs, customAccountValue } = useLoaderData<LoaderData>();
   const carouselRef = useRef<HTMLDivElement>(null);
   const [account, setAccount] = useState(customAccountValue || undefined);
+  const [showTextInput, setShowTextInput] = useState(false);
 
   useEffect(() => {
     if (customAccountValue) {
