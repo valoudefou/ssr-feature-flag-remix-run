@@ -4,6 +4,8 @@ import {
   DecisionMode,
   LogLevel,
 } from "@flagship.io/react-sdk";
+import dotenv from "dotenv";
+dotenv.config();
 
 let flagshipInstance: Flagship | null = null;
 
