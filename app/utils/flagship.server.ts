@@ -51,3 +51,27 @@ export async function getFsVisitorData(visitorData: {
   await visitor.fetchFlags();
   return visitor; // inferred type automatically
 }
+
+export async function getFsVisitorData2(visitorData: {
+  id: string;
+  hasConsented: boolean;
+  context: Record<string, any>;
+}) {
+  const envId = requireEnv("FS_ENV_ID_DAVID");
+  const apiKey = requireEnv("FS_API_KEY_DAVID");
+
+  const freshFlagshipInstance = await Flagship.start(envId, apiKey, {
+    fetchNow: false,
+    decisionMode: DecisionMode.DECISION_API,
+    logLevel: LogLevel.INFO,
+  });
+
+  const visitor = freshFlagshipInstance.newVisitor({
+    visitorId: visitorData.id,
+    hasConsented: visitorData.hasConsented,
+    context: visitorData.context,
+  });
+
+  await visitor.fetchFlags();
+  return visitor;
+}

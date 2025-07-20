@@ -2,7 +2,7 @@
 
 import { json, LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { getFsVisitorData } from "../utils/flagship.server";
+import { getFsVisitorData, getFsVisitorData2 } from "../utils/flagship.server";
 import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
@@ -45,13 +45,28 @@ export const loader: LoaderFunction = async ({ request }) => {
     }
     logs.push("[Loader][Info] Environment variables verified");
 
-    const visitor = await getFsVisitorData({
-      id: visitorId,
-      hasConsented: true,
-      context: {
-        Session: "Returning",
-      },
-    });
+    let visitor;
+    if (customAccountValue === "account-2") {
+      logs.push("[Loader][Info] Using fresh Flagship instance for account-2");
+ 
+      visitor = await getFsVisitorData2({
+        id: visitorId,
+        hasConsented: true,
+        context: {
+          Session: "Returning",
+        },
+      });
+    } else {
+      logs.push("[Loader][Info] Using singleton Flagship instance (default or account-1)");
+      visitor = await getFsVisitorData({
+        id: visitorId,
+        hasConsented: true,
+        context: {
+          Session: "Returning",
+        },
+      });
+    }
+
     logs.push(`[Loader][Info] Reading user context: ${visitor.context ? JSON.stringify(visitor.context) : "No context available"}`);
     logs.push("[Loader][Info] Fetching Flagship visitor data");
     logs.push("[Loader][Info] Visitor data fetched");
@@ -364,8 +379,6 @@ export default function Index() {
                 >
                   <option value="account-1">Account 1</option>
                   <option value="account-2">Account 2</option>
-                  <option value="account-3">Account 3</option>
-                  <option value="account-4">Account 4</option>
                 </select>
               </div>
 
@@ -413,8 +426,6 @@ export default function Index() {
                 >
                   <option value="account-1">Account 1</option>
                   <option value="account-2">Account 2</option>
-                  <option value="account-3">Account 3</option>
-                  <option value="account-4">Account 4</option>
                 </select>
               </div>
 
