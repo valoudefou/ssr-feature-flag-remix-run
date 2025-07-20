@@ -48,8 +48,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     let visitor;
     if (customAccountValue === "account-2") {
       logs.push("[Loader][Info] Using fresh Flagship instance for account-2");
-    logs.push("FS_ENV_ID_DAVID:", process.env.FS_ENV_ID_DAVID);
-    logs.push("All ENV KEYS:", Object.keys(process.env));
+
       visitor = await getFsVisitorData2({
         id: visitorId,
         hasConsented: true,
