@@ -14,7 +14,8 @@
     "isolatedModules": true,
     "noEmit": true,                       // Don't output files, let Vite handle it
     "jsx": "react-jsx",                   // React 18 JSX transform
-    "types": ["vite/client", "@remix-run/node", "@types/node"]
+"types": ["vite/client", "@remix-run/node", "node", "globals"]
+
   },
   "include": ["remix.config.js", "app", "types", "tests"],
   "exclude": ["node_modules", "build"]

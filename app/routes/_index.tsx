@@ -23,8 +23,10 @@ interface LoaderData {
   flagKey: string;
   userContext: Record<string, any>;
   logs: string[]; // add this
+  campaignId?: string;
+  campaignName?: string;
+  campaignType?: string;
 }
-
 
 // Loader function to fetch data for the page
 export const loader: LoaderFunction = async ({ request }) => {
@@ -124,6 +126,12 @@ export const loader: LoaderFunction = async ({ request }) => {
       blockName = "Our Top Picks For You";
     }
 
+    const flagMetadata = {
+      campaignId: flag?.metadata.campaignId,
+      campaignName: flag?.metadata.campaignName,
+      campaignType: flag?.metadata.campaignType,
+    };
+
     return json<LoaderData>(
       {
         products,
@@ -134,6 +142,9 @@ export const loader: LoaderFunction = async ({ request }) => {
         flagKey,
         userContext: visitor.context,
         logs,
+        campaignId: flagMetadata.campaignId,
+        campaignName: flagMetadata.campaignName,
+        campaignType: flagMetadata.campaignType,
       },
       {
         headers: {
@@ -142,6 +153,7 @@ export const loader: LoaderFunction = async ({ request }) => {
         },
       }
     );
+
   } catch (error) {
     logs.push(`[Loader] Loader error: ${String(error)}`);
     return json<LoaderData>({
@@ -160,6 +172,41 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 // Main React component for the page
 export default function Index() {
+
+  const {
+    flagKey,
+    visitorId,
+    flagMetadata,
+  } = useLoaderData<typeof loader>();
+
+useEffect(() => {
+  if (typeof window === "undefined" || !flagMetadata?.campaignId) return;
+
+  const interval = setInterval(() => {
+    if (typeof window.gtag === "function") {
+      console.log("✅ gtag is ready, sending event");
+
+      window.gtag('event', 'ab_test_view', {
+        campaign_id: flagMetadata.campaignId,
+        campaign_name: flagMetadata.campaignName,
+        campaign_type: flagMetadata.campaignType,
+        flag_key: flagKey,
+        visitor_id: visitorId,
+      });
+
+      clearInterval(interval); // stop polling
+    } else {
+      console.warn("⏳ waiting for gtag to load...");
+    }
+  }, 200); // check every 200ms
+
+  // optional timeout to stop trying after 5 seconds
+  setTimeout(() => clearInterval(interval), 5000);
+
+  return () => clearInterval(interval);
+}, [flagMetadata, flagKey, visitorId]);
+
+
 
   // Get loader data
   const { products, flagValue, blockName, logs, customAccountValue } = useLoaderData<LoaderData>();
