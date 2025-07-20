@@ -44,7 +44,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       throw new Error("Missing SITE_ID or RECS_BEARER environment variables");
     }
     logs.push("[Loader][Info] Environment variables verified");
-    
+
     const accountLoaders = {
       "account-1": {
         loader: getFsVisitorData,
@@ -124,16 +124,24 @@ export const loader: LoaderFunction = async ({ request }) => {
       blockName = "Our Top Picks For You";
     }
 
-    return json<LoaderData>({
-      products,
-      flagValue,
-      blockName,
-      visitorId,
-      customAccountValue,
-      flagKey,
-      userContext: visitor.context,
-      logs,
-    });
+    return json<LoaderData>(
+      {
+        products,
+        flagValue,
+        blockName,
+        visitorId,
+        customAccountValue,
+        flagKey,
+        userContext: visitor.context,
+        logs,
+      },
+      {
+        headers: {
+          // Tell CDN/browser to cache for 15 seconds
+          "Cache-Control": "public, max-age=15, stale-while-revalidate=15",
+        },
+      }
+    );
   } catch (error) {
     logs.push(`[Loader] Loader error: ${String(error)}`);
     return json<LoaderData>({
