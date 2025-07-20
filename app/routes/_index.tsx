@@ -381,7 +381,7 @@ export default function Index() {
           {showTextInput ? (
             <form method="get" className="space-y-4">
               {/* Account Selection */}
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-900">
                   Account
                 </label>
@@ -393,7 +393,7 @@ export default function Index() {
                   <option value="account-1">Account 1</option>
                   <option value="account-2">Account 2</option>
                 </select>
-              </div>
+              </div> */}
 
               {/* Manual Input */}
               <div className="space-y-2">
@@ -428,7 +428,7 @@ export default function Index() {
           ) : (
             <form method="get" className="space-y-4">
               {/* Account Selection */}
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-900">
                   Account
                 </label>
@@ -440,7 +440,7 @@ export default function Index() {
                   <option value="account-1">Account 1</option>
                   <option value="account-2">Account 2</option>
                 </select>
-              </div>
+              </div> */}
 
               {/* Preset Selection */}
               <div className="space-y-2">
