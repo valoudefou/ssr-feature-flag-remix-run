@@ -14,6 +14,19 @@ function requireEnv(name: string): string {
   return value;
 }
 
+// ✅ Helper with fallback support
+function requireEnvFallback(primary: string, fallback: string): string {
+  return (
+    process.env[primary] ||
+    process.env[fallback] ||
+    (() => {
+      throw new Error(
+        `Missing environment variables: ${primary} and fallback ${fallback}`
+      );
+    })()
+  );
+}
+
 // Start and return the singleton Flagship SDK instance
 export async function startFlagshipSDK(): Promise<Flagship> {
   if (
@@ -35,6 +48,7 @@ export async function startFlagshipSDK(): Promise<Flagship> {
   return flagshipInstance;
 }
 
+// Singleton usage
 export async function getFsVisitorData(visitorData: {
   id: string;
   hasConsented: boolean;
@@ -49,16 +63,17 @@ export async function getFsVisitorData(visitorData: {
   });
 
   await visitor.fetchFlags();
-  return visitor; // inferred type automatically
+  return visitor;
 }
 
+// Fresh instance using fallback envs
 export async function getFsVisitorData2(visitorData: {
   id: string;
   hasConsented: boolean;
   context: Record<string, any>;
 }) {
-  const envId = requireEnv("FS_ENV_ID_DAVID") || requireEnv("FS_ENV_ID");
-  const apiKey = requireEnv("FS_API_KEY_DAVID") || requireEnv("FS_API_KEY");
+  const envId = requireEnvFallback("FS_ENV_ID_DAVID", "FS_ENV_ID");
+  const apiKey = requireEnvFallback("FS_API_KEY_DAVID", "FS_API_KEY");
 
   const freshFlagshipInstance = await Flagship.start(envId, apiKey, {
     fetchNow: false,
