@@ -203,34 +203,35 @@ export default function Index() {
     logs,
     customAccountValue,
   } = useLoaderData<LoaderData>();
-useEffect(() => {
-  window.dataLayer = window.dataLayer || [];
+  useEffect(() => {
+    window.dataLayer = window.dataLayer || [];
 
-  // Example: View Item event with custom data
-  window.dataLayer.push({
-    event: "view_item",
-    visitor_id: visitorId,
-    flag_key: flagKey,
-    flag_value: flagValue,
-    block_name: blockName,
-    custom_account_value: customAccountValue,
-    flag_metadata: flagMetadata,
-    logs: logs, // Can remove or sanitize if too verbose
-    ecommerce: {
-      items: (products || []).map((product: any, index: number) => ({
-        item_id: product.id || `product_${index}`,
-        item_name: product.name || `Product ${index}`,
-        price: product.price,
-        currency: product.currency || "USD",
-        item_brand: product.brand,
-        item_category: product.category,
-        item_category2: product.subcategory,
-        item_variant: product.variant,
-        quantity: product.quantity || 1,
-      })),
-    }
-  });
-}, [visitorId]);
+    window.dataLayer.push({
+      event: "view_item_list", // GA4 standard for listing view
+      visitor_id: visitorId,
+      flag_key: flagKey,
+      flag_value: flagValue,
+      block_name: blockName,
+      custom_account_value: customAccountValue,
+      flag_metadata: flagMetadata,
+      logs: logs,
+      ecommerce: {
+        item_list_name: blockName || "default_list", // Optional, helps group listings
+        items: (products || []).map((product: any, index: number) => ({
+          item_id: product.id || `product_${index}`,
+          item_name: product.name || `Product ${index}`,
+          price: product.price,
+          currency: product.currency || "USD",
+          item_brand: product.brand,
+          item_category: product.category,
+          item_category2: product.subcategory,
+          item_variant: product.variant,
+          index: index,
+          quantity: product.quantity || 1,
+        })),
+      }
+    });
+  }, [visitorId]);
 
   // GA4 event sending logic
   useEffect(() => {
