@@ -427,7 +427,7 @@ export default function Index() {
             {products.map((product: Product) => (
               <article
                 onClick={() => {
-                  logs.push(`[Loader][Data] Data sent to analytics for product ID: ${product.id}, Name: ${product.name}`);
+                  logs.push(`[Action][Data] Data sent to analytics for product ID: ${product.id}, Name: ${product.name}`);
                 }}
                 key={product.id}
                 className="group inline-block min-w-[220px] max-w-[240px] bg-white/95 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-xl hover:border-gray-200 transition-all duration-300 mx-3 align-top cursor-pointer overflow-hidden"
