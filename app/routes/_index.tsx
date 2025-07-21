@@ -31,25 +31,40 @@ interface LoaderData {
   };
 }
 
-
 // Loader function to fetch data for the page
 export const loader: LoaderFunction = async ({ request }) => {
   const logs: string[] = [];
 
+  const timestampedLog = (logs: string[], message: string) => {
+    const now = new Date();
+
+    // Format: "18:46:32"
+    const time = now.toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+
+    // No space between ] and start of message
+    logs.push(`[${time}]${message}`);
+  };
+
   try {
-    logs.push("[Loader][Info] Parsing URL and getting custom flagValue");
+    timestampedLog(logs, "[Loader][Info] Parsing URL and getting custom flagValue");
     const url = new URL(request.url);
     const customFlagValue = url.searchParams.get("flagValue") || undefined;
     const customAccountValue = String(url.searchParams.get("accountValue") ?? "");
 
     const visitorId = uuidv4();
-    logs.push(`[Loader][Info] Generated visitorId: ${visitorId}`);
+    timestampedLog(logs, `[Loader][Info] Generated visitorId: ${visitorId}`);
 
     if (!process.env.SITE_ID || !process.env.RECS_BEARER) {
-      logs.push("[Loader][Info] Missing SITE_ID or RECS_BEARER environment variables");
+      timestampedLog(logs, "[Loader][Info] Missing SITE_ID or RECS_BEARER environment variables");
       throw new Error("Missing SITE_ID or RECS_BEARER environment variables");
     }
-    logs.push("[Loader][Info] Environment variables verified");
+    timestampedLog(logs, "[Loader][Info] Environment variables verified");
+
     type AccountKey = "account-1" | "account-2" | "account-3";
     type VisitorData = any;
     type Visitor = any;
@@ -71,8 +86,6 @@ export const loader: LoaderFunction = async ({ request }) => {
       },
     };
 
-
-
     let accountKey: AccountKey = "account-1";
     if (customAccountValue === "account-2") {
       accountKey = "account-2";
@@ -81,8 +94,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     }
     const { loader, log } = accountLoaders[accountKey];
 
-
-    logs.push(log);
+    timestampedLog(logs, log);
 
     const visitor = await loader({
       id: visitorId,
@@ -92,20 +104,20 @@ export const loader: LoaderFunction = async ({ request }) => {
       },
     });
 
-    logs.push(`[Loader][Info] Reading user context: ${visitor.context ? JSON.stringify(visitor.context) : "No context available"}`);
-    logs.push("[Loader][Info] Fetching Flagship visitor data");
-    logs.push("[Loader][Info] Visitor data fetched");
+    timestampedLog(logs, `[Loader][Info] Reading user context: ${visitor.context ? JSON.stringify(visitor.context) : "No context available"}`);
+    timestampedLog(logs, "[Loader][Info] Fetching Flagship visitor data");
+    timestampedLog(logs, "[Loader][Info] Visitor data fetched");
 
     const flag = visitor.getFlag("flagProductRecs");
     const fallbackFlagValue = flag?.getValue("07275641-4a2e-49b2-aa5d-bb4b7b8b2a4c");
     const flagValue = customFlagValue || fallbackFlagValue;
     const flagKey = (flag as any)?._key || "unknown";
 
-    logs.push(`[Loader][Info] Flag key fetched: ${flagKey}`);
-    logs.push(`[Loader][Info] Using flagValue: ${flagValue}`);
-    logs.push(`[Loader][Info] Campaign type: ${JSON.stringify(flag.metadata.campaignType)}`);
-    logs.push(`[Loader][Info] Campaign mame: ${JSON.stringify(flag.metadata.campaignName)}`);
-    logs.push(`[Loader][Info] CampaignId: ${JSON.stringify(flag.metadata.campaignId)}`);
+    timestampedLog(logs, `[Loader][Info] Flag key fetched: ${flagKey}`);
+    timestampedLog(logs, `[Loader][Info] Using flagValue: ${flagValue}`);
+    timestampedLog(logs, `[Loader][Info] Campaign type: ${JSON.stringify(flag.metadata.campaignType)}`);
+    timestampedLog(logs, `[Loader][Info] Campaign mame: ${JSON.stringify(flag.metadata.campaignName)}`);
+    timestampedLog(logs, `[Loader][Info] CampaignId: ${JSON.stringify(flag.metadata.campaignId)}`);
 
     const query = JSON.stringify({ viewing_item: "456" });
     const fields = JSON.stringify(["id", "name", "img_link", "price"]);
@@ -115,7 +127,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 
     if (flagValue) {
       try {
-        logs.push(`[Loader][Info] Fetching recommendations for flagValue ${flagValue}`);
+        timestampedLog(logs, `[Loader][Info] Fetching recommendations for flagValue ${flagValue}`);
         const recoUrl = `https://uc-info.eu.abtasty.com/v1/reco/${process.env.SITE_ID}/recos/${flagValue}?variables=${encodeURIComponent(
           query
         )}&fields=${encodeURIComponent(fields)}`;
@@ -128,22 +140,22 @@ export const loader: LoaderFunction = async ({ request }) => {
 
         if (!res.ok) {
           const errorText = await res.text();
-          logs.push(`[Loader][Info] Failed to fetch recommendations: ${res.status} ${res.statusText} - ${errorText}`);
+          timestampedLog(logs, `[Loader][Info] Failed to fetch recommendations: ${res.status} ${res.statusText} - ${errorText}`);
           blockName = "Our Top Picks For You";
         } else {
           const data = await res.json();
           products = data.items || [];
           blockName = data.name || "Our Top Picks For You";
-          logs.push(`[Loader][Info] Recommendations fetched: ${products.length}`);
-          logs.push(`[Loader][Info] Block name: ${blockName}`);
-          logs.push(`[Loader][Info] URL params in use: ${url}`);
+          timestampedLog(logs, `[Loader][Info] Recommendations fetched: ${products.length}`);
+          timestampedLog(logs, `[Loader][Info] Block name: ${blockName}`);
+          timestampedLog(logs, `[Loader][Info] URL params in use: ${url}`);
         }
       } catch (err) {
-        logs.push(`[Loader][Info] Recommendation API fetch error: ${String(err)}`);
+        timestampedLog(logs, `[Loader][Info] Recommendation API fetch error: ${String(err)}`);
         blockName = "Our Top Picks For You";
       }
     } else {
-      logs.push("[Loader][Info] No flagValue provided, using default block name");
+      timestampedLog(logs, "[Loader][Info] No flagValue provided, using default block name");
       blockName = "Our Top Picks For You";
     }
 
@@ -176,7 +188,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       }
     );
   } catch (error) {
-    logs.push(`[Loader] Loader error: ${String(error)}`);
+    timestampedLog(logs, `[Loader] Loader error: ${String(error)}`);
     return json<LoaderData>({
       products: [],
       flagValue: undefined,
@@ -189,6 +201,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     });
   }
 };
+
 
 
 // Main React component for the page
@@ -414,7 +427,7 @@ export default function Index() {
             {products.map((product: Product) => (
               <article
                 onClick={() => {
-                  logs.push(`[Loader][Info] Data sent to analytics for product ID: ${product.id}, Name: ${product.name}`);
+                  logs.push(`[Loader][Data] Data sent to analytics for product ID: ${product.id}, Name: ${product.name}`);
                 }}
                 key={product.id}
                 className="group inline-block min-w-[220px] max-w-[240px] bg-white/95 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-xl hover:border-gray-200 transition-all duration-300 mx-3 align-top cursor-pointer overflow-hidden"
@@ -435,7 +448,7 @@ export default function Index() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      logs.push(`[Action][Cart] Add to bag clicked for product ID: ${product.id}, Name: ${product.name}`);
+                      logs.push(`[Action][Data] Add to bag clicked for product ID: ${product.id}, Name: ${product.name}`);
                       // Add-to-cart logic here
                     }}
                     className="absolute top-4 right-4 z-10 w-5 h-5 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-md shadow-sm transition-all hover:scale-110 active:scale-95 group"
