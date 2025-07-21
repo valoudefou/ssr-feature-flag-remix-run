@@ -513,7 +513,7 @@ export default function Index() {
           <div className="relative">
             <div className="max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800/50">
               <div className="p-4 space-y-1">
-                {logs.map((log, i) => (
+                {logs.slice().reverse().map((log, i) => (
                   <div
                     key={i}
                     className="group relative px-3 py-2 text-sm font-mono text-green-300 bg-gray-800/30 hover:bg-gray-800/50 rounded-md border border-transparent hover:border-gray-700/50 transition-all duration-150 select-text"
