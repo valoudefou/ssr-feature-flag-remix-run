@@ -271,29 +271,38 @@ export default function Index() {
 
   // GA4 event sending logic
   useEffect(() => {
-    if (
-      typeof window === "undefined" ||
-      typeof window.gtag !== "function" ||
-      !flagMetadata?.campaignId
-    ) {
-      return;
+    try {
+      if (
+        typeof window === "undefined" ||
+        typeof window.gtag !== "function" ||
+        !flagMetadata?.campaignId
+      ) {
+        timestampedLog(logs, `[Action][GA4] Skipped sending ab_test_view: gtag not available or missing campaignId`);
+        return;
+      }
+
+      const eventData = {
+        campaign_id: flagMetadata.campaignId,
+        campaign_name: flagMetadata.campaignName,
+        campaign_type: flagMetadata.campaignType,
+        flag_key: flagKey,
+        visitor_id: visitorId,
+      };
+
+      window.gtag("event", "ab_test_view", eventData);
+
+      timestampedLog(
+        logs,
+        `[Action][GA4] window.gtag("event", "ab_test_view", ${JSON.stringify(eventData)})`
+      );
+    } catch (err) {
+      timestampedLog(
+        logs,
+        `[Error][GA4] Failed to send ab_test_view event: ${String(err)}`
+      );
     }
-
-    const eventData = {
-      campaign_id: flagMetadata.campaignId,
-      campaign_name: flagMetadata.campaignName,
-      campaign_type: flagMetadata.campaignType,
-      flag_key: flagKey,
-      visitor_id: visitorId,
-    };
-
-    window.gtag("event", "ab_test_view", eventData);
-
-    timestampedLog(
-      logs,
-      `[Action][Data] Called window.gtag("event", "ab_test_view", ${JSON.stringify(eventData)})`
-    );
   }, [flagMetadata, flagKey, visitorId]);
+
 
 
 
