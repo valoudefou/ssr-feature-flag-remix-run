@@ -279,16 +279,19 @@ export default function Index() {
       return;
     }
 
-    window.gtag("event", "ab_test_view", {
+    const eventData = {
       campaign_id: flagMetadata.campaignId,
       campaign_name: flagMetadata.campaignName,
       campaign_type: flagMetadata.campaignType,
       flag_key: flagKey,
       visitor_id: visitorId,
-    });
+    };
 
-    timestampedLog(logs, `[Action][Data] Data sent to GA4`);
+    window.gtag("event", "ab_test_view", eventData);
+
+    timestampedLog(logs, `[Action][Data] Data sent to GA4: ${JSON.stringify(eventData)}`);
   }, [flagMetadata, flagKey, visitorId]);
+
 
 
 
