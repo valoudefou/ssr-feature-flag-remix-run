@@ -2,6 +2,7 @@
 
 import { json, LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
+import { useFlagship } from "@flagship.io/react-sdk";
 import { getFsVisitorData, getFsVisitorData2, getFsVisitorData3 } from "../utils/flagship.server";
 import React, { useEffect, useRef, useState } from "react";
 
@@ -31,22 +32,17 @@ interface LoaderData {
   };
 }
 
-// Loader function to fetch data for the page
 export const loader: LoaderFunction = async ({ request }) => {
   const logs: string[] = [];
 
   const timestampedLog = (logs: string[], message: string) => {
     const now = new Date();
-
-    // Format: "18:46:32"
     const time = now.toLocaleTimeString("en-GB", {
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
       hour12: false,
     });
-
-    // No space between ] and start of message
     logs.push(`[${time}]${message}`);
   };
 
@@ -55,6 +51,23 @@ export const loader: LoaderFunction = async ({ request }) => {
     const url = new URL(request.url);
     const customFlagValue = url.searchParams.get("flagValue") || undefined;
     const customAccountValue = String(url.searchParams.get("accountValue") ?? "");
+
+    // Extract other query params for context update
+    const contextParams: Record<string, string | number | boolean> = {};
+    url.searchParams.forEach((value, key) => {
+      if (key === "flagValue" || key === "accountValue") return; // skip keys already handled
+
+      // Parse values for booleans and numbers
+      if (value === "true") {
+        contextParams[key] = true;
+      } else if (value === "false") {
+        contextParams[key] = false;
+      } else if (!isNaN(Number(value)) && value.trim() !== "") {
+        contextParams[key] = Number(value);
+      } else {
+        contextParams[key] = value;
+      }
+    });
 
     const visitorId = uuidv4();
     timestampedLog(logs, `[Loader][Info] Generated visitorId: ${visitorId}`);
@@ -96,6 +109,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 
     timestampedLog(logs, log);
 
+    // Load visitor initially with base context
     const visitor = await loader({
       id: visitorId,
       hasConsented: true,
@@ -103,6 +117,13 @@ export const loader: LoaderFunction = async ({ request }) => {
         Session: "Returning",
       },
     });
+
+    // Now update visitor context with URL params
+    if (Object.keys(contextParams).length > 0) {
+      visitor.updateContext(contextParams);
+      console.log(contextParams)
+      timestampedLog(logs, `[Loader][Info] Updated visitor context with URL params: ${JSON.stringify(contextParams)}`);
+    }
 
     timestampedLog(logs, `[Loader][Info] Reading user context: ${visitor.context ? JSON.stringify(visitor.context) : "No context available"}`);
     timestampedLog(logs, "[Loader][Info] Fetching Flagship visitor data");
@@ -201,6 +222,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     });
   }
 };
+
 
 
 
