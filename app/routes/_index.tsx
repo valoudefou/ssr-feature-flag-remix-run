@@ -204,20 +204,20 @@ export default function Index() {
     customAccountValue,
   } = useLoaderData<LoaderData>();
 
-  // Push event to dataLayer once on mount
   useEffect(() => {
-
     window.dataLayer = window.dataLayer || [];
+
     window.dataLayer.push({
-      event: "new_subscriber",
-      formLocation: "footer",
+      flagKey,
+      visitorId,
+      flagMetadata,
+      products,
+      flagValue,
+      blockName,
+      logs,
+      customAccountValue,
     });
   }, [visitorId]);
-
-  // Debugging log to verify component mount
-  useEffect(() => {
-    console.log("🎯 useEffect running");
-  }, []);
 
   // GA4 event sending logic
   useEffect(() => {
