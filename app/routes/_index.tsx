@@ -203,21 +203,34 @@ export default function Index() {
     logs,
     customAccountValue,
   } = useLoaderData<LoaderData>();
+useEffect(() => {
+  window.dataLayer = window.dataLayer || [];
 
-  useEffect(() => {
-    window.dataLayer = window.dataLayer || [];
-
-    window.dataLayer.push({
-      flagKey,
-      visitorId,
-      flagMetadata,
-      products,
-      flagValue,
-      blockName,
-      logs,
-      customAccountValue,
-    });
-  }, [visitorId]);
+  // Example: View Item event with custom data
+  window.dataLayer.push({
+    event: "view_item",
+    visitor_id: visitorId,
+    flag_key: flagKey,
+    flag_value: flagValue,
+    block_name: blockName,
+    custom_account_value: customAccountValue,
+    flag_metadata: flagMetadata,
+    logs: logs, // Can remove or sanitize if too verbose
+    ecommerce: {
+      items: (products || []).map((product: any, index: number) => ({
+        item_id: product.id || `product_${index}`,
+        item_name: product.name || `Product ${index}`,
+        price: product.price,
+        currency: product.currency || "USD",
+        item_brand: product.brand,
+        item_category: product.category,
+        item_category2: product.subcategory,
+        item_variant: product.variant,
+        quantity: product.quantity || 1,
+      })),
+    }
+  });
+}, [visitorId]);
 
   // GA4 event sending logic
   useEffect(() => {
