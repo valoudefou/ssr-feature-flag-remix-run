@@ -94,7 +94,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       },
       "account-3": {
         loader: getFsVisitorData3,
-        log: "[Loader][Info] Initializing SDK Ed",
+        log: "[Loader][Info] Initializing SDK",
       },
     };
 
