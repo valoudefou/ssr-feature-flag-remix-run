@@ -59,15 +59,15 @@ export const loader: LoaderFunction = async ({ request }) => {
     }> = {
       "account-1": {
         loader: getFsVisitorData,
-        log: "[Loader][Info] Initializing SDK",
+        log: "[Loader][Info] Initializing SDK Val",
       },
       "account-2": {
         loader: getFsVisitorData2,
-        log: "[Loader][Info] Initializing SDK",
+        log: "[Loader][Info] Initializing SDK David",
       },
       "account-3": {
         loader: getFsVisitorData3,
-        log: "[Loader][Info] Initializing SDK",
+        log: "[Loader][Info] Initializing SDK Ed",
       },
     };
 
