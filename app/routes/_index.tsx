@@ -231,6 +231,7 @@ export default function Index() {
         })),
       }
     });
+
   }, [visitorId]);
 
   // GA4 event sending logic
@@ -430,6 +431,29 @@ export default function Index() {
                     decoding="async"
                     {...{ fetchpriority: "low" }}
                   />
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      logs.push(`[Action][Cart] Add to bag clicked for product ID: ${product.id}, Name: ${product.name}`);
+                      // Add-to-cart logic here
+                    }}
+                    className="absolute top-4 right-4 z-10 w-5 h-5 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-md shadow-sm transition-all hover:scale-110 active:scale-95 group"
+                    aria-label="Add to Bag"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-6 h-6 text-gray-600 transition-colors duration-200 group-hover:text-blue-600 group-active:text-blue-700"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path d="M5 8h14l-1.4 11.2a2 2 0 01-2 1.8H8.4a2 2 0 01-2-1.8L5 8z" />
+                      <path d="M16 8V6a4 4 0 00-8 0v2" />
+                    </svg>
+                  </button>
+
 
                   {/* Subtle overlay on hover */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
