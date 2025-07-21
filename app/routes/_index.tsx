@@ -310,7 +310,6 @@ export default function Index() {
 
 
 
-  // Get loader data
 
   const carouselRef = useRef<HTMLDivElement>(null);
   const [account, setAccount] = useState(customAccountValue || undefined);
