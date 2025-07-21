@@ -465,7 +465,7 @@ export default function Index() {
                       timestampedLog(logs, `[Action][Data] Add to bag clicked for product ID: ${product.id}, Name: ${product.name}`);
                       // Add-to-cart logic here
                     }}
-                    className="absolute top-4 p-1 right-4 z-10 w-6 h-6 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-md shadow-sm transition-all hover:scale-110 active:scale-95 group"
+                    className="absolute top-4 p-1 right-4 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-md shadow-sm transition-all hover:scale-110 active:scale-95 group"
                     aria-label="Add to Bag"
                   >
                     <svg
