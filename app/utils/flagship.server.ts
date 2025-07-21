@@ -76,3 +76,11 @@ export async function getFsVisitorData2(data: VisitorData): Promise<Visitor> {
   const freshInstance = await initializeFlagship(envId, apiKey);
   return createVisitorAndFetchFlags(freshInstance, data);
 }
+
+// Alternate: uses a fresh instance with ED env vars
+export async function getFsVisitorData3(data: VisitorData): Promise<Visitor> {
+  const envId = requireEnv("FS_ENV_ID_ED");
+  const apiKey = requireEnv("FS_API_KEY_ED");
+  const freshInstance = await initializeFlagship(envId, apiKey);
+  return createVisitorAndFetchFlags(freshInstance, data);
+}

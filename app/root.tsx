@@ -6,6 +6,7 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 import type { LinksFunction, MetaFunction } from "@remix-run/node";
+import "../types/globals.d.ts";
 
 import "./tailwind.css";
 import "slick-carousel/slick/slick.css";
@@ -36,11 +37,11 @@ export default function App() {
         <Meta />
         <Links />
         {/* Google Analytics 4 script */}
-      <script
-  async
-  src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-  crossOrigin="anonymous"
-></script>
+        <script
+          async
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+          crossOrigin="anonymous"
+        ></script>
         <script
           dangerouslySetInnerHTML={{
             __html: `

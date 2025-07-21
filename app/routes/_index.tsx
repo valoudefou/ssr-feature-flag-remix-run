@@ -2,8 +2,9 @@
 
 import { json, LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { getFsVisitorData, getFsVisitorData2 } from "../utils/flagship.server";
-import { useEffect, useRef, useState } from "react";
+import { getFsVisitorData, getFsVisitorData2, getFsVisitorData3 } from "../utils/flagship.server";
+import React, { useEffect, useRef, useState } from "react";
+
 import { v4 as uuidv4 } from "uuid";
 
 // Type definitions for product and loader data
@@ -17,16 +18,19 @@ interface Product {
 interface LoaderData {
   products: Product[];
   flagValue?: string;
-  customAccountValue: string | null; // <-- add this
+  customAccountValue: string | null;
   blockName: string;
   visitorId: string;
   flagKey: string;
   userContext: Record<string, any>;
-  logs: string[]; // add this
-  campaignId?: string;
-  campaignName?: string;
-  campaignType?: string;
+  logs: string[];
+  flagMetadata?: {
+    campaignId?: string;
+    campaignName?: string;
+    campaignType?: string;
+  };
 }
+
 
 // Loader function to fetch data for the page
 export const loader: LoaderFunction = async ({ request }) => {
@@ -46,8 +50,13 @@ export const loader: LoaderFunction = async ({ request }) => {
       throw new Error("Missing SITE_ID or RECS_BEARER environment variables");
     }
     logs.push("[Loader][Info] Environment variables verified");
-
-    const accountLoaders = {
+    type AccountKey = "account-1" | "account-2" | "account-3";
+    type VisitorData = any;
+    type Visitor = any;
+    const accountLoaders: Record<AccountKey, {
+      loader: (data: VisitorData) => Promise<Visitor>;
+      log: string;
+    }> = {
       "account-1": {
         loader: getFsVisitorData,
         log: "[Loader][Info] Initializing SDK",
@@ -56,10 +65,22 @@ export const loader: LoaderFunction = async ({ request }) => {
         loader: getFsVisitorData2,
         log: "[Loader][Info] Initializing SDK",
       },
+      "account-3": {
+        loader: getFsVisitorData3,
+        log: "[Loader][Info] Initializing SDK",
+      },
     };
 
-    const accountKey = customAccountValue === "account-2" ? "account-2" : "account-1";
+
+
+    let accountKey: AccountKey = "account-1";
+    if (customAccountValue === "account-2") {
+      accountKey = "account-2";
+    } else if (customAccountValue === "account-3") {
+      accountKey = "account-3";
+    }
     const { loader, log } = accountLoaders[accountKey];
+
 
     logs.push(log);
 
@@ -142,18 +163,18 @@ export const loader: LoaderFunction = async ({ request }) => {
         flagKey,
         userContext: visitor.context,
         logs,
-        campaignId: flagMetadata.campaignId,
-        campaignName: flagMetadata.campaignName,
-        campaignType: flagMetadata.campaignType,
+        flagMetadata: {
+          campaignId: flagMetadata.campaignId,
+          campaignName: flagMetadata.campaignName,
+          campaignType: flagMetadata.campaignType,
+        },
       },
       {
         headers: {
-          // Tell CDN/browser to cache for 15 seconds
           "Cache-Control": "public, max-age=15, stale-while-revalidate=15",
         },
       }
     );
-
   } catch (error) {
     logs.push(`[Loader] Loader error: ${String(error)}`);
     return json<LoaderData>({
@@ -172,44 +193,75 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 // Main React component for the page
 export default function Index() {
-
   const {
     flagKey,
     visitorId,
     flagMetadata,
-  } = useLoaderData<typeof loader>();
+    products,
+    flagValue,
+    blockName,
+    logs,
+    customAccountValue,
+  } = useLoaderData<LoaderData>();
 
-useEffect(() => {
-  if (typeof window === "undefined" || !flagMetadata?.campaignId) return;
+  // Push event to dataLayer once on mount
+  useEffect(() => {
 
-  const interval = setInterval(() => {
-    if (typeof window.gtag === "function") {
-      console.log("✅ gtag is ready, sending event");
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: "new_subscriber",
+      formLocation: "footer",
+    });
+  }, [visitorId]);
 
-      window.gtag('event', 'ab_test_view', {
+  // Debugging log to verify component mount
+  useEffect(() => {
+    console.log("🎯 useEffect running");
+  }, []);
+
+  // GA4 event sending logic
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if (!flagMetadata?.campaignId) {
+      console.warn("⚠️ GA4: Missing flag metadata", flagMetadata);
+      return;
+    }
+
+    const sendEvent = () => {
+      window.gtag?.("event", "ab_test_view", {
         campaign_id: flagMetadata.campaignId,
         campaign_name: flagMetadata.campaignName,
         campaign_type: flagMetadata.campaignType,
         flag_key: flagKey,
         visitor_id: visitorId,
       });
+      console.log("✅ GA4 event sent");
+    };
 
-      clearInterval(interval); // stop polling
-    } else {
-      console.warn("⏳ waiting for gtag to load...");
-    }
-  }, 200); // check every 200ms
+    // Poll until gtag is ready or timeout after 5 seconds
+    const interval = setInterval(() => {
+      if (typeof window.gtag === "function") {
+        sendEvent();
+        clearInterval(interval);
+      } else {
+        console.log("⏳ Waiting for gtag...");
+      }
+    }, 200);
 
-  // optional timeout to stop trying after 5 seconds
-  setTimeout(() => clearInterval(interval), 5000);
+    const timeout = setTimeout(() => clearInterval(interval), 5000);
 
-  return () => clearInterval(interval);
-}, [flagMetadata, flagKey, visitorId]);
+    // Cleanup on unmount
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [flagMetadata?.campaignId, flagKey, visitorId]);
 
 
 
   // Get loader data
-  const { products, flagValue, blockName, logs, customAccountValue } = useLoaderData<LoaderData>();
+
   const carouselRef = useRef<HTMLDivElement>(null);
   const [account, setAccount] = useState(customAccountValue || undefined);
   const [showTextInput, setShowTextInput] = useState(false);
@@ -217,9 +269,10 @@ useEffect(() => {
   useEffect(() => {
     if (customAccountValue) {
       setAccount(customAccountValue);
-      console.log(account);
+      console.log("🔧 Account set from loader:", customAccountValue);
     }
   }, [customAccountValue]);
+
 
 
   // State for carousel scroll buttons
