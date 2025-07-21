@@ -243,14 +243,40 @@ export default function Index() {
     }
 
     const sendEvent = () => {
-      window.gtag?.("event", "ab_test_view", {
-        campaign_id: flagMetadata.campaignId,
-        campaign_name: flagMetadata.campaignName,
-        campaign_type: flagMetadata.campaignType,
+      if (!products || products.length === 0) return;
+
+      const eventPayload = {
+        event: "view_item_list",
+        item_list_name: blockName || "default_list",
+        items: products.map((product: any, index: number) => ({
+          item_id: product.id || `product_${index}`,
+          item_name: product.name || `Product ${index}`,
+          price: product.price,
+          currency: product.currency || "USD",
+          item_brand: product.brand,
+          item_category: product.category,
+          item_category2: product.subcategory,
+          item_variant: product.variant,
+          index,
+          quantity: product.quantity || 1,
+        })),
+        campaign_id: flagMetadata?.campaignId,
+        campaign_name: flagMetadata?.campaignName,
+        campaign_type: flagMetadata?.campaignType,
         flag_key: flagKey,
         visitor_id: visitorId,
+      };
+
+      window.gtag?.("event", "view_item_list", eventPayload);
+
+      // Log to console in the same structure as your logs
+      console.log({
+        type: "gtag",
+        level: "info",
+        context: "sendEvent",
+        message: "Sent GA4 view_item_list",
+        data: eventPayload,
       });
-      console.log("✅ GA4 event sent");
     };
 
     // Poll until gtag is ready or timeout after 5 seconds
