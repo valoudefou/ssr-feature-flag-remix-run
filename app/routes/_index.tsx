@@ -216,6 +216,20 @@ export default function Index() {
     logs,
     customAccountValue,
   } = useLoaderData<LoaderData>();
+  const timestampedLog = (logs: string[], message: string) => {
+    const now = new Date();
+
+    // Format: "18:46:32"
+    const time = now.toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+
+    // No space between ] and start of message
+    logs.push(`[${time}]${message}`);
+  };
   useEffect(() => {
     window.dataLayer = window.dataLayer || [];
 
@@ -427,7 +441,7 @@ export default function Index() {
             {products.map((product: Product) => (
               <article
                 onClick={() => {
-                  logs.push(`[Action][Data] Data sent to analytics for product ID: ${product.id}, Name: ${product.name}`);
+                  timestampedLog(logs, `[Action][Data] Data sent to analytics for product ID: ${product.id}, Name: ${product.name}`);
                 }}
                 key={product.id}
                 className="group inline-block min-w-[220px] max-w-[240px] bg-white/95 backdrop-blur-sm border border-gray-100 rounded-xl shadow-sm hover:shadow-xl hover:border-gray-200 transition-all duration-300 mx-3 align-top cursor-pointer overflow-hidden"
@@ -448,7 +462,7 @@ export default function Index() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      logs.push(`[Action][Data] Add to bag clicked for product ID: ${product.id}, Name: ${product.name}`);
+                      timestampedLog(logs, `[Action][Data] Add to bag clicked for product ID: ${product.id}, Name: ${product.name}`);
                       // Add-to-cart logic here
                     }}
                     className="absolute top-4 right-4 z-10 w-5 h-5 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-md shadow-sm transition-all hover:scale-110 active:scale-95 group"
