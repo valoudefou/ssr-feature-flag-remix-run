@@ -120,8 +120,8 @@ export const loader: LoaderFunction = async ({ request }) => {
     // Update visitor context with URL params if any
     if (Object.keys(contextParams).length > 0) {
       visitor.updateContext(contextParams);
+      timestampedLog(logs, `[Loader][Info] URL params in use: ${url}`);
       await visitor.fetchFlags();
-      timestampedLog(logs, `[Loader][Info] Updated visitor context with URL params: ${JSON.stringify(contextParams)}`);
     }
 
     timestampedLog(logs, `[Loader][Info] Reading user context: ${visitor.context ? JSON.stringify(visitor.context) : "No context available"}`);
@@ -168,7 +168,7 @@ export const loader: LoaderFunction = async ({ request }) => {
           blockName = data.name || "Our Top Picks For You";
           timestampedLog(logs, `[Loader][Info] Recommendations fetched: ${products.length}`);
           timestampedLog(logs, `[Loader][Info] Block name: ${blockName}`);
-          timestampedLog(logs, `[Loader][Info] URL params in use: ${url}`);
+          timestampedLog(logs, `[Loader][Info] Updated visitor context with URL params: ${JSON.stringify(contextParams)}`);
         }
       } catch (err) {
         timestampedLog(logs, `[Loader][Info] Recommendation API fetch error: ${String(err)}`);
