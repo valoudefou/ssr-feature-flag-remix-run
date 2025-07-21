@@ -295,7 +295,7 @@ export default function Index() {
 
       timestampedLog(
         logs,
-        `[Action][GA4] window.gtag("event", "ab_test_view", ${JSON.stringify(eventData)})`
+        `[Action][GA4] SENDING DATA window.gtag("event", "ab_test_view", ${JSON.stringify(eventData)})`
       );
     } catch (err) {
       timestampedLog(
