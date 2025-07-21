@@ -2,7 +2,6 @@
 
 import { json, LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { useFlagship } from "@flagship.io/react-sdk";
 import { getFsVisitorData, getFsVisitorData2, getFsVisitorData3 } from "../utils/flagship.server";
 import React, { useEffect, useRef, useState } from "react";
 
@@ -68,7 +67,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       }
     });
 
-    const visitorId = 'visitor-34209423980';
+    const visitorId = uuidv4();
     timestampedLog(logs, `[Loader][Info] Generated visitorId: ${visitorId}`);
 
     if (!process.env.SITE_ID || !process.env.RECS_BEARER) {
@@ -252,100 +251,44 @@ export default function Index() {
     logs.push(`[${time}]${message}`);
   };
   useEffect(() => {
-    window.dataLayer = window.dataLayer || [];
 
-    window.dataLayer.push({
-      event: "view_item_list", // GA4 standard for listing view
-      visitor_id: visitorId,
-      flag_key: flagKey,
-      flag_value: flagValue,
-      block_name: blockName,
-      custom_account_value: customAccountValue,
-      flag_metadata: flagMetadata,
-      logs: logs,
-      ecommerce: {
-        item_list_name: blockName || "default_list", // Optional, helps group listings
-        items: (products || []).map((product: any, index: number) => ({
-          item_id: product.id || `product_${index}`,
-          item_name: product.name || `Product ${index}`,
-          price: product.price,
-          currency: product.currency || "USD",
-          item_brand: product.brand,
-          item_category: product.category,
-          item_category2: product.subcategory,
-          item_variant: product.variant,
-          index: index,
-          quantity: product.quantity || 1,
-        })),
-      }
-    });
+    const logs: string[] = [];
+
+    const timestampedLog = (message: string) => {
+      const time = new Date().toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      });
+      const entry = `[${time}] ${message}`;
+      logs.push(entry);
+      console.log(entry);
+    };
+
 
   }, [visitorId]);
 
   // GA4 event sending logic
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    if (!flagMetadata?.campaignId) {
-      console.warn("⚠️ GA4: Missing flag metadata", flagMetadata);
+    if (
+      typeof window === "undefined" ||
+      typeof window.gtag !== "function" ||
+      !flagMetadata?.campaignId
+    ) {
       return;
     }
 
-    const sendEvent = () => {
-      if (!products || products.length === 0) return;
+    window.gtag("event", "ab_test_view", {
+      campaign_id: flagMetadata.campaignId,
+      campaign_name: flagMetadata.campaignName,
+      campaign_type: flagMetadata.campaignType,
+      flag_key: flagKey,
+      visitor_id: visitorId,
+    });
 
-      const eventPayload = {
-        event: "view_item_list",
-        item_list_name: blockName || "default_list",
-        items: products.map((product: any, index: number) => ({
-          item_id: product.id || `product_${index}`,
-          item_name: product.name || `Product ${index}`,
-          price: product.price,
-          currency: product.currency || "USD",
-          item_brand: product.brand,
-          item_category: product.category,
-          item_category2: product.subcategory,
-          item_variant: product.variant,
-          index,
-          quantity: product.quantity || 1,
-        })),
-        campaign_id: flagMetadata?.campaignId,
-        campaign_name: flagMetadata?.campaignName,
-        campaign_type: flagMetadata?.campaignType,
-        flag_key: flagKey,
-        visitor_id: visitorId,
-      };
-
-      window.gtag?.("event", "view_item_list", eventPayload);
-
-      // Log to console in the same structure as your logs
-      console.log({
-        type: "gtag",
-        level: "info",
-        context: "sendEvent",
-        message: "Sent GA4 view_item_list",
-        data: eventPayload,
-      });
-    };
-
-    // Poll until gtag is ready or timeout after 5 seconds
-    const interval = setInterval(() => {
-      if (typeof window.gtag === "function") {
-        sendEvent();
-        clearInterval(interval);
-      } else {
-        console.log("⏳ Waiting for gtag...");
-      }
-    }, 200);
-
-    const timeout = setTimeout(() => clearInterval(interval), 5000);
-
-    // Cleanup on unmount
-    return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
-    };
-  }, [flagMetadata?.campaignId, flagKey, visitorId]);
+    timestampedLog(logs, `[Action][Data] Data sent to GA4`);
+  }, [flagMetadata, flagKey, visitorId]);
 
 
 
