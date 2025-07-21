@@ -289,8 +289,12 @@ export default function Index() {
 
     window.gtag("event", "ab_test_view", eventData);
 
-    timestampedLog(logs, `[Action][Data] Data sent to GA4: ${JSON.stringify(eventData)}`);
+    timestampedLog(
+      logs,
+      `[Action][Data] Called window.gtag("event", "ab_test_view", ${JSON.stringify(eventData)})`
+    );
   }, [flagMetadata, flagKey, visitorId]);
+
 
 
 
