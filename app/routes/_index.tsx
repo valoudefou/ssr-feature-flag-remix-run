@@ -52,12 +52,11 @@ export const loader: LoaderFunction = async ({ request }) => {
     const customFlagValue = url.searchParams.get("flagValue") || undefined;
     const customAccountValue = String(url.searchParams.get("accountValue") ?? "");
 
-    // Extract other query params for context update
+    // Extract other query params for context update (handle boolean/number parsing)
     const contextParams: Record<string, string | number | boolean> = {};
     url.searchParams.forEach((value, key) => {
-      if (key === "flagValue" || key === "accountValue") return; // skip keys already handled
+      if (key === "flagValue" || key === "accountValue") return;
 
-      // Parse values for booleans and numbers
       if (value === "true") {
         contextParams[key] = true;
       } else if (value === "false") {
@@ -69,7 +68,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       }
     });
 
-    const visitorId = uuidv4();
+    const visitorId = 'visitor-34209423980';
     timestampedLog(logs, `[Loader][Info] Generated visitorId: ${visitorId}`);
 
     if (!process.env.SITE_ID || !process.env.RECS_BEARER) {
@@ -118,10 +117,10 @@ export const loader: LoaderFunction = async ({ request }) => {
       },
     });
 
-    // Now update visitor context with URL params
+    // Update visitor context with URL params if any
     if (Object.keys(contextParams).length > 0) {
       visitor.updateContext(contextParams);
-      console.log(contextParams)
+      await visitor.fetchFlags();
       timestampedLog(logs, `[Loader][Info] Updated visitor context with URL params: ${JSON.stringify(contextParams)}`);
     }
 
@@ -137,7 +136,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     timestampedLog(logs, `[Loader][Info] Flag key fetched: ${flagKey}`);
     timestampedLog(logs, `[Loader][Info] Using flagValue: ${flagValue}`);
     timestampedLog(logs, `[Loader][Info] Campaign type: ${JSON.stringify(flag.metadata.campaignType)}`);
-    timestampedLog(logs, `[Loader][Info] Campaign mame: ${JSON.stringify(flag.metadata.campaignName)}`);
+    timestampedLog(logs, `[Loader][Info] Campaign name: ${JSON.stringify(flag.metadata.campaignName)}`);
     timestampedLog(logs, `[Loader][Info] CampaignId: ${JSON.stringify(flag.metadata.campaignId)}`);
 
     const query = JSON.stringify({ viewing_item: "456" });
