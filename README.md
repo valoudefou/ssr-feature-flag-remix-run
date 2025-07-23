@@ -216,7 +216,7 @@ const visitor = await getFsVisitorData({
 });
 
 const flag = visitor.getFlag("flagProductRecs");
-const flagValue = flag?.getValue("fallback-uuid");
+const flagValue = flag?.getValue("2e2c9992-2c5d-466a-bded-71cb2a059730");
 ```
 
 ---
