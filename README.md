@@ -191,6 +191,67 @@ export default function Index() {
 
 ---
 
+## 🧠 Server-Side Feature Evaluation in the `loader`
+
+On each page load, the `loader` performs server-side evaluation of feature flags and recommendation logic using user-specific context.
+
+### 🔍 How it works:
+
+- Extracts user traits from URL query parameters (e.g. `?UserType=Premium`)
+- Initializes a Flagship visitor with this dynamic context
+- Fetches feature flags and product recommendation data
+- Passes all data to the client for rendering
+
+### 🧪 Code Example:
+
+```ts
+const visitor = await getFsVisitorData({
+  id: "user123",
+  hasConsented: true,
+  context: {
+    Session: "Active",
+    UserType: "Premium",
+    someNumber: 42
+  },
+});
+
+const flag = visitor.getFlag("flagProductRecs");
+const flagValue = flag?.getValue("fallback-uuid");
+```
+
+---
+
+## 🚩 Modify User Context Dynamically via URL
+
+You can easily simulate different user contexts — and corresponding flag variations — by tweaking the URL.
+
+### ✅ Example:
+
+```
+https://ssr-feature-flag-remix-run.vercel.app/?Session=Returning&UserType=Premium&someNumber=7
+```
+
+This maps directly to the visitor context:
+
+```ts
+context: {
+  Session: "Returning",
+  UserType: "Premium",
+  someNumber: 7
+}
+```
+
+### 💡 Why this is useful:
+
+- **Test any user segment** without changing code
+- **Preview flag-driven experiences** instantly
+- **Simplify QA** for segmented scenarios
+- **Demo real-world use cases** for stakeholders
+
+> 👉 Try appending `?Session=Returning&UserType=Premium&someNumber=7` to the URL to see a different variation in action.
+
+---
+
 ## Further Reading
 
 - [Flagship.io React SDK Documentation](https://flagship.io/docs/sdk/react)
