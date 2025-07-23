@@ -221,7 +221,7 @@ const flagValue = flag?.getValue("fallback-uuid");
 
 ---
 
-## 🚩 Modify User Context Dynamically via URL
+### 🚩 Modify User Context Dynamically via URL
 
 You can easily simulate different user contexts — and corresponding flag variations — by tweaking the URL.
 
